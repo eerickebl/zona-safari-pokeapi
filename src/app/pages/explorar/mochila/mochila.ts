@@ -3,7 +3,6 @@ import { Component, computed, input, output, signal } from '@angular/core';
 import { BallInfo, Estadisticas, Inventario } from '../../../core/models/safari.models';
 import { PorcentajePipe } from '../../../shared/pipes/porcentaje.pipe';
 
-/** Inventario de balls (datos de /item), estadísticas y botón para reiniciar la expedición. */
 @Component({
   selector: 'app-mochila',
   imports: [PorcentajePipe],
@@ -11,38 +10,36 @@ import { PorcentajePipe } from '../../../shared/pipes/porcentaje.pipe';
   styleUrl: './mochila.css',
 })
 export class Mochila {
-  readonly balls = input.required<BallInfo[]>();
-  readonly inventario = input.required<Inventario>();
-  readonly estadisticas = input.required<Estadisticas>();
-  readonly error = input<string | null>(null);
-  readonly bloqueado = input(false);
+  balls = input.required<BallInfo[]>();
+  inventario = input.required<Inventario>();
+  estadisticas = input.required<Estadisticas>();
+  error = input<string | null>(null);
+  bloqueado = input(false);
 
-  readonly reintentar = output<void>();
-  readonly nuevaExpedicion = output<void>();
+  reintentar = output<void>();
+  reiniciar = output<void>();
 
-  /** Primer clic pide confirmación; el segundo reinicia. */
-  protected readonly confirmando = signal(false);
+  confirmando = signal(false);
 
-  protected readonly total = computed(() =>
-    Object.values(this.inventario()).reduce((suma, cantidad) => suma + cantidad, 0),
-  );
+  total = computed(() => Object.values(this.inventario()).reduce((suma, n) => suma + n, 0));
 
-  protected readonly efectividad = computed(() => {
-    const { capturas, lanzamientos } = this.estadisticas();
-    return lanzamientos > 0 ? capturas / lanzamientos : 0;
+  efectividad = computed(() => {
+    const e = this.estadisticas();
+    return e.lanzamientos > 0 ? e.capturas / e.lanzamientos : 0;
   });
 
-  protected textoPrecio(ball: BallInfo): string {
+  precio(ball: BallInfo): string {
     if (ball.costo > 0) {
-      return `Precio en tienda: ${ball.costo} ₽`;
+      return 'Precio: ' + ball.costo;
     }
-    return ball.id === 'safari-ball' ? 'Exclusiva de la Zona Safari' : 'PokéAPI no registra su precio';
+    return ball.id === 'safari-ball' ? 'Solo en la Zona Safari' : 'Sin precio';
   }
 
-  protected pedirNuevaExpedicion(): void {
+  // la primera vez pide confirmar y la segunda reinicia
+  clicReiniciar(): void {
     if (this.confirmando()) {
       this.confirmando.set(false);
-      this.nuevaExpedicion.emit();
+      this.reiniciar.emit();
     } else {
       this.confirmando.set(true);
     }

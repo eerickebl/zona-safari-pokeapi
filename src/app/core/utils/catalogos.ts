@@ -1,6 +1,5 @@
 import { IdBall, Inventario } from '../models/safari.models';
 
-/** Nombre en español y colores de cada tipo de Pokémon. */
 export const TIPOS: Record<string, { nombre: string; fondo: string; texto: string }> = {
   normal: { nombre: 'Normal', fondo: '#a8a77a', texto: '#1f1f1f' },
   fighting: { nombre: 'Lucha', fondo: '#c22e28', texto: '#ffffff' },
@@ -22,65 +21,19 @@ export const TIPOS: Record<string, { nombre: string; fondo: string; texto: strin
   fairy: { nombre: 'Hada', fondo: '#d685ad', texto: '#1f1f1f' },
 };
 
-/** Textos propios para cada hábitat de /pokemon-habitat (la API solo entrega el nombre y las especies). */
-export const HABITATS: Record<string, { nombre: string; descripcion: string; icono: string; color: string }> = {
-  grassland: {
-    nombre: 'Pradera',
-    descripcion: 'Hierba alta y campo abierto: el hábitat con más especies.',
-    icono: '🌾',
-    color: '#7fae45',
-  },
-  forest: {
-    nombre: 'Bosque',
-    descripcion: 'Árboles frondosos llenos de Pokémon bicho y planta.',
-    icono: '🌲',
-    color: '#2f7d4a',
-  },
-  'waters-edge': {
-    nombre: 'Orilla del agua',
-    descripcion: 'Ríos, lagos y pantanos con Pokémon anfibios.',
-    icono: '🏞️',
-    color: '#2f9c8f',
-  },
-  sea: {
-    nombre: 'Mar',
-    descripcion: 'Mar abierto y profundidades donde nadan Pokémon acuáticos.',
-    icono: '🌊',
-    color: '#2b6cb0',
-  },
-  cave: {
-    nombre: 'Cueva',
-    descripcion: 'Cuevas oscuras y húmedas, hogar de quienes evitan la luz.',
-    icono: '🦇',
-    color: '#5a4636',
-  },
-  mountain: {
-    nombre: 'Montaña',
-    descripcion: 'Laderas rocosas y cumbres frías para Pokémon resistentes.',
-    icono: '⛰️',
-    color: '#7a6f60',
-  },
-  'rough-terrain': {
-    nombre: 'Terreno agreste',
-    descripcion: 'Volcanes, desiertos y terrenos ásperos.',
-    icono: '🌋',
-    color: '#a5602d',
-  },
-  urban: {
-    nombre: 'Ciudad',
-    descripcion: 'Calles, centrales eléctricas y edificios abandonados.',
-    icono: '🏙️',
-    color: '#5c6b7a',
-  },
-  rare: {
-    nombre: 'Zona rara',
-    descripcion: 'Lugares misteriosos donde aparecen legendarios y míticos.',
-    icono: '✨',
-    color: '#6b4fa3',
-  },
+// nombres en español y color de cada hábitat de /pokemon-habitat
+export const HABITATS: Record<string, { nombre: string; color: string }> = {
+  grassland: { nombre: 'Pradera', color: '#7fae45' },
+  forest: { nombre: 'Bosque', color: '#2f7d4a' },
+  'waters-edge': { nombre: 'Orilla del agua', color: '#2f9c8f' },
+  sea: { nombre: 'Mar', color: '#2b6cb0' },
+  cave: { nombre: 'Cueva', color: '#5a4636' },
+  mountain: { nombre: 'Montaña', color: '#7a6f60' },
+  'rough-terrain': { nombre: 'Terreno rocoso', color: '#a5602d' },
+  urban: { nombre: 'Ciudad', color: '#5c6b7a' },
+  rare: { nombre: 'Raro', color: '#6b4fa3' },
 };
 
-/** Orden en que se muestran los hábitats (del más común al más difícil). */
 export const ORDEN_HABITATS = Object.keys(HABITATS);
 
 export const STATS: Record<string, string> = {
@@ -93,21 +46,18 @@ export const STATS: Record<string, string> = {
 };
 
 export const GENERACIONES: Record<string, string> = {
-  'generation-i': 'I · Kanto',
-  'generation-ii': 'II · Johto',
-  'generation-iii': 'III · Hoenn',
-  'generation-iv': 'IV · Sinnoh',
-  'generation-v': 'V · Teselia',
-  'generation-vi': 'VI · Kalos',
-  'generation-vii': 'VII · Alola',
-  'generation-viii': 'VIII · Galar',
-  'generation-ix': 'IX · Paldea',
+  'generation-i': '1 (Kanto)',
+  'generation-ii': '2 (Johto)',
+  'generation-iii': '3 (Hoenn)',
+  'generation-iv': '4 (Sinnoh)',
+  'generation-v': '5 (Teselia)',
+  'generation-vi': '6 (Kalos)',
+  'generation-vii': '7 (Alola)',
+  'generation-viii': '8 (Galar)',
+  'generation-ix': '9 (Paldea)',
 };
 
-/**
- * Reglas propias de cada ball: bono de captura y cantidad inicial en la mochila.
- * El nombre, la imagen, la descripción y el precio se obtienen de /item.
- */
+// bono de cada ball y cuantas hay en la mochila al empezar
 export const REGLAS_BALLS: Record<IdBall, { bono: number; inicial: number; respaldo: string }> = {
   'safari-ball': { bono: 1.5, inicial: 10, respaldo: 'Safari Ball' },
   'poke-ball': { bono: 1, inicial: 15, respaldo: 'Poké Ball' },
@@ -126,5 +76,4 @@ export function inventarioInicial(): Inventario {
   };
 }
 
-/** Probabilidad de que un encuentro sea shiny (aumentada respecto a los juegos para hacerlo divertido). */
 export const PROBABILIDAD_SHINY = 1 / 64;

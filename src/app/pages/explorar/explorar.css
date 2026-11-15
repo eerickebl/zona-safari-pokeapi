@@ -10,21 +10,9 @@
   scroll-margin-top: 5rem;
 }
 
-.columna-juego .titulo-seccion {
-  margin-bottom: -0.4rem;
-}
-
 @media (min-width: 1000px) {
   .disposicion {
-    grid-template-columns: minmax(19rem, 23rem) 1fr;
+    grid-template-columns: 22rem 1fr;
     align-items: start;
-  }
-
-  .columna-habitats {
-    position: sticky;
-    top: 5.4rem;
-    max-height: calc(100vh - 6.4rem);
-    overflow-y: auto;
-    padding-right: 0.3rem;
   }
 }

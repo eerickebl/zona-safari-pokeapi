@@ -1,33 +1,32 @@
-import { Component, computed, input, output } from '@angular/core';
+import { Component, input, output } from '@angular/core';
 
 import { Habitat } from '../../../core/models/safari.models';
 import { spriteDesdeId } from '../../../core/utils/mapeadores';
 
-/** Lista de hábitats de /pokemon-habitat con el progreso de capturas de cada uno. */
 @Component({
   selector: 'app-selector-habitat',
   templateUrl: './selector-habitat.html',
   styleUrl: './selector-habitat.css',
 })
 export class SelectorHabitat {
-  readonly habitats = input.required<Habitat[]>();
-  readonly seleccionado = input<string | null>(null);
-  readonly capturados = input<ReadonlySet<number>>(new Set<number>());
-  readonly bloqueado = input(false);
+  habitats = input.required<Habitat[]>();
+  seleccionado = input<string | null>(null);
+  capturados = input<Set<number>>(new Set());
+  bloqueado = input(false);
 
-  readonly elegir = output<string>();
+  elegir = output<string>();
 
-  protected readonly sprite = spriteDesdeId;
+  sprite = spriteDesdeId;
 
-  /** Especies distintas ya capturadas en cada hábitat. */
-  protected readonly progresos = computed(() => {
-    const capturados = this.capturados();
-    return new Map(
-      this.habitats().map((h) => [h.nombre, h.especies.filter((e) => capturados.has(e.id)).length]),
-    );
-  });
+  // cuantas especies del habitat ya estan en la coleccion
+  capturadas(habitat: Habitat): number {
+    return habitat.especies.filter((e) => this.capturados().has(e.id)).length;
+  }
 
-  protected porcentaje(capturadas: number, total: number): number {
-    return total > 0 ? (capturadas / total) * 100 : 0;
+  porcentaje(habitat: Habitat): number {
+    if (habitat.especies.length === 0) {
+      return 0;
+    }
+    return (this.capturadas(habitat) / habitat.especies.length) * 100;
   }
 }

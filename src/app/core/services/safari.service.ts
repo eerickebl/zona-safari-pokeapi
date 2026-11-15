@@ -1,5 +1,5 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
-import { Subscription, finalize } from 'rxjs';
+import { Subscription } from 'rxjs';
 
 import {
   BallInfo,
@@ -26,78 +26,64 @@ import { formatearPorcentaje } from '../utils/texto';
 import { ColeccionService } from './coleccion.service';
 import { PokeApiService } from './poke-api.service';
 
-/**
- * Estado y reglas de la expedición en la Zona Safari.
- * Es un servicio raíz, así que la expedición se conserva al cambiar de página.
- */
+// Aqui esta toda la logica del juego. Como es un servicio, la partida no se pierde al cambiar de pagina.
 @Injectable({ providedIn: 'root' })
 export class SafariService {
-  private readonly api = inject(PokeApiService);
-  private readonly coleccion = inject(ColeccionService);
-  private busqueda: Subscription | null = null;
-  private ballsSolicitadas = false;
-  private contadorBitacora = 0;
+  private api = inject(PokeApiService);
+  private coleccion = inject(ColeccionService);
+  private peticion: Subscription | null = null;
+  private ballsCargadas = false;
+  private contador = 0;
 
-  // ---- Balls (/item) y mochila ----
-  readonly balls = signal<BallInfo[]>(ORDEN_BALLS.map(ballDeRespaldo));
-  readonly cargandoBalls = signal(false);
-  readonly errorBalls = signal<string | null>(null);
-  readonly inventario = signal<Inventario>(inventarioInicial());
-  readonly ballSeleccionada = signal<IdBall>('safari-ball');
+  balls = signal<BallInfo[]>(ORDEN_BALLS.map((id) => ballDeRespaldo(id)));
+  errorBalls = signal<string | null>(null);
+  inventario = signal<Inventario>(inventarioInicial());
+  ballSeleccionada = signal<IdBall>('safari-ball');
 
-  // ---- Exploración ----
-  readonly habitatSeleccionado = signal<string | null>(null);
-  readonly encuentro = signal<Encuentro | null>(null);
-  readonly buscando = signal(false);
-  readonly errorBusqueda = signal<string | null>(null);
-  readonly animando = signal(false);
-  readonly sacudidas = signal(0);
-  readonly bitacora = signal<EntradaBitacora[]>([]);
-  readonly estadisticas = signal<Estadisticas>(estadisticasIniciales());
+  habitatSeleccionado = signal<string | null>(null);
+  encuentro = signal<Encuentro | null>(null);
+  buscando = signal(false);
+  errorBusqueda = signal<string | null>(null);
+  animando = signal(false);
+  sacudidas = signal(0);
+  bitacora = signal<EntradaBitacora[]>([]);
+  estadisticas = signal<Estadisticas>(estadisticasIniciales());
 
-  // ---- Valores derivados ----
-  readonly totalBalls = computed(() =>
-    Object.values(this.inventario()).reduce((suma, cantidad) => suma + cantidad, 0),
+  totalBalls = computed(() => Object.values(this.inventario()).reduce((suma, n) => suma + n, 0));
+  sinBalls = computed(() => this.totalBalls() === 0);
+  ballActual = computed(
+    () => this.balls().find((b) => b.id === this.ballSeleccionada()) ?? ballDeRespaldo(this.ballSeleccionada()),
   );
-  readonly sinBalls = computed(() => this.totalBalls() === 0);
-  readonly ballActual = computed(
-    () =>
-      this.balls().find((b) => b.id === this.ballSeleccionada()) ??
-      ballDeRespaldo(this.ballSeleccionada()),
-  );
-  readonly encuentroActivo = computed(() => this.encuentro()?.resultado === 'activo');
-  readonly puedeActuar = computed(() => this.encuentroActivo() && !this.animando());
-  readonly expedicionTerminada = computed(
-    () => this.sinBalls() && !this.encuentroActivo() && !this.animando(),
-  );
-  readonly probabilidadCapturaActual = computed(() => {
-    const encuentro = this.encuentro();
-    return encuentro
-      ? probabilidadCaptura(encuentro.ficha.tasaCaptura, this.ballActual().bono, encuentro.animo)
-      : 0;
-  });
-  readonly probabilidadHuidaActual = computed(() => {
-    const encuentro = this.encuentro();
-    return encuentro
-      ? probabilidadHuida(velocidadDe(encuentro.ficha), esEspecial(encuentro.ficha), encuentro.animo)
-      : 0;
+  encuentroActivo = computed(() => this.encuentro()?.resultado === 'activo');
+  puedeActuar = computed(() => this.encuentroActivo() && !this.animando());
+  expedicionTerminada = computed(() => this.sinBalls() && !this.encuentroActivo() && !this.animando());
+
+  probabilidadCapturaActual = computed(() => {
+    const e = this.encuentro();
+    if (!e) {
+      return 0;
+    }
+    return probabilidadCaptura(e.ficha.tasaCaptura, this.ballActual().bono, e.animo);
   });
 
-  /** Carga nombre, imagen, descripción y precio de las balls desde /item (una sola vez). */
+  probabilidadHuidaActual = computed(() => {
+    const e = this.encuentro();
+    if (!e) {
+      return 0;
+    }
+    return probabilidadHuida(velocidadDe(e.ficha), esEspecial(e.ficha), e.animo);
+  });
+
   cargarBalls(): void {
-    if (this.ballsSolicitadas && !this.errorBalls()) {
+    if (this.ballsCargadas && !this.errorBalls()) {
       return;
     }
-    this.ballsSolicitadas = true;
-    this.cargandoBalls.set(true);
+    this.ballsCargadas = true;
     this.errorBalls.set(null);
-    this.api
-      .listarBalls()
-      .pipe(finalize(() => this.cargandoBalls.set(false)))
-      .subscribe({
-        next: (balls) => this.balls.set(balls),
-        error: (error: unknown) => this.errorBalls.set(mensajeDeError(error)),
-      });
+    this.api.listarBalls().subscribe({
+      next: (balls) => this.balls.set(balls),
+      error: (error) => this.errorBalls.set(mensajeDeError(error)),
+    });
   }
 
   seleccionarBall(id: IdBall): void {
@@ -115,43 +101,43 @@ export class SafariService {
     }
   }
 
-  /** Elige una especie al azar del hábitat y consulta su ficha en PokéAPI. */
+  // elige un pokemon al azar del habitat y lo busca en la api
   explorar(habitat: Habitat): void {
     if (this.buscando() || this.animando() || this.encuentroActivo() || this.sinBalls()) {
       return;
     }
     const especie = habitat.especies[Math.floor(Math.random() * habitat.especies.length)];
     if (!especie) {
-      this.errorBusqueda.set('Este hábitat no tiene Pokémon registrados.');
+      this.errorBusqueda.set('Este hábitat no tiene Pokémon.');
       return;
     }
-    this.busqueda?.unsubscribe();
+    this.peticion?.unsubscribe();
     this.encuentro.set(null);
     this.errorBusqueda.set(null);
     this.buscando.set(true);
-    this.busqueda = this.api
-      .obtenerFicha(especie.id)
-      .pipe(finalize(() => this.buscando.set(false)))
-      .subscribe({
-        next: (ficha) => {
-          const shiny = Math.random() < PROBABILIDAD_SHINY;
-          this.encuentro.set({
-            ficha,
-            shiny,
-            habitat: habitat.nombre,
-            animo: 'tranquilo',
-            turnosAnimo: 0,
-            intentos: 0,
-            resultado: 'activo',
-          });
-          this.estadisticas.update((e) => ({ ...e, encuentros: e.encuentros + 1 }));
-          this.registrar(`¡Un ${ficha.nombre}${shiny ? ' shiny ✨' : ''} salvaje apareció!`, 'info');
-        },
-        error: (error: unknown) => this.errorBusqueda.set(mensajeDeError(error)),
-      });
+    this.peticion = this.api.obtenerFicha(especie.id).subscribe({
+      next: (ficha) => {
+        const shiny = Math.random() < PROBABILIDAD_SHINY;
+        this.encuentro.set({
+          ficha,
+          shiny,
+          habitat: habitat.nombre,
+          animo: 'tranquilo',
+          turnosAnimo: 0,
+          intentos: 0,
+          resultado: 'activo',
+        });
+        this.estadisticas.update((e) => ({ ...e, encuentros: e.encuentros + 1 }));
+        this.registrar(`Apareció un ${ficha.nombre}${shiny ? ' shiny' : ''}.`, 'info');
+        this.buscando.set(false);
+      },
+      error: (error) => {
+        this.errorBusqueda.set(mensajeDeError(error));
+        this.buscando.set(false);
+      },
+    });
   }
 
-  /** Lanza la ball seleccionada y anima las sacudidas antes de mostrar el resultado. */
   async lanzarBall(): Promise<void> {
     const encuentro = this.encuentro();
     const ball = this.ballActual();
@@ -159,13 +145,12 @@ export class SafariService {
       return;
     }
     if (this.inventario()[ball.id] <= 0) {
-      this.registrar(`No te quedan unidades de ${ball.nombre}.`, 'fallo');
       return;
     }
 
-    const { tasaCaptura } = encuentro.ficha;
-    const probabilidad = probabilidadCaptura(tasaCaptura, ball.bono, encuentro.animo);
-    const resultado = simularLanzamiento(tasaCaptura, ball.bono, encuentro.animo);
+    const tasa = encuentro.ficha.tasaCaptura;
+    const probabilidad = probabilidadCaptura(tasa, ball.bono, encuentro.animo);
+    const resultado = simularLanzamiento(tasa, ball.bono, encuentro.animo);
     const intentos = encuentro.intentos + 1;
 
     this.inventario.update((inv) => ({ ...inv, [ball.id]: inv[ball.id] - 1 }));
@@ -173,11 +158,12 @@ export class SafariService {
     this.encuentro.set({ ...encuentro, intentos });
     this.animando.set(true);
     this.sacudidas.set(0);
-    this.registrar(`Lanzaste una ${ball.nombre} (${formatearPorcentaje(probabilidad)} de éxito).`, 'info');
+    this.registrar(`Lanzaste una ${ball.nombre} (${formatearPorcentaje(probabilidad)}).`, 'info');
 
+    // animacion de la ball moviendose
     await esperar(550);
-    for (let sacudida = 1; sacudida <= resultado.sacudidas; sacudida++) {
-      this.sacudidas.set(sacudida);
+    for (let i = 1; i <= resultado.sacudidas; i++) {
+      this.sacudidas.set(i);
       await esperar(700);
     }
 
@@ -187,7 +173,7 @@ export class SafariService {
         this.encuentro.set({ ...actual, resultado: 'capturado' });
         this.estadisticas.update((e) => ({ ...e, capturas: e.capturas + 1 }));
         this.coleccion.agregar({
-          uid: crearUid(),
+          uid: Date.now().toString(),
           ficha: actual.ficha,
           shiny: actual.shiny,
           habitat: actual.habitat,
@@ -196,32 +182,24 @@ export class SafariService {
           probabilidad,
           fecha: new Date().toISOString(),
         });
-        this.registrar(`¡Atrapaste a ${actual.ficha.nombre}! Se guardó en tu colección.`, 'exito');
+        this.registrar(`¡Atrapaste a ${actual.ficha.nombre}!`, 'exito');
       } else {
-        this.registrar(mensajeEscape(actual.ficha.nombre, resultado.sacudidas), 'fallo');
+        this.registrar(`${actual.ficha.nombre} se escapó de la ball.`, 'fallo');
         this.terminarTurno();
       }
     }
 
     this.animando.set(false);
     this.sacudidas.set(0);
-    this.asegurarBallDisponible();
+    this.cambiarBallSiSeAcabo();
   }
 
-  /** Roca: tasa de captura ×2 pero huida ×2 durante 1–5 turnos. */
   lanzarRoca(): void {
-    this.cambiarAnimo(
-      'enojado',
-      (nombre) => `Lanzaste una roca: ${nombre} se enojó. Será más fácil atraparlo, pero puede huir.`,
-    );
+    this.cambiarAnimo('enojado', 'Lanzaste una roca y se enojó.');
   }
 
-  /** Cebo: tasa de captura ×0,5 pero huida ×0,5 durante 1–5 turnos. */
   lanzarCebo(): void {
-    this.cambiarAnimo(
-      'comiendo',
-      (nombre) => `Lanzaste un cebo: ${nombre} está comiendo. Huirá menos, pero costará más atraparlo.`,
-    );
+    this.cambiarAnimo('comiendo', 'Lanzaste un cebo y se puso a comer.');
   }
 
   huir(): void {
@@ -233,7 +211,6 @@ export class SafariService {
     this.registrar(`Te alejaste de ${encuentro.ficha.nombre}.`, 'info');
   }
 
-  /** Cierra el encuentro terminado para buscar otro Pokémon. */
   continuar(): void {
     if (this.encuentroActivo() || this.animando()) {
       return;
@@ -246,7 +223,7 @@ export class SafariService {
     if (this.animando()) {
       return;
     }
-    this.busqueda?.unsubscribe();
+    this.peticion?.unsubscribe();
     this.buscando.set(false);
     this.inventario.set(inventarioInicial());
     this.ballSeleccionada.set('safari-ball');
@@ -254,20 +231,19 @@ export class SafariService {
     this.encuentro.set(null);
     this.errorBusqueda.set(null);
     this.bitacora.set([]);
-    this.registrar('Comenzó una nueva expedición: tu mochila está llena.', 'info');
   }
 
-  private cambiarAnimo(animo: EstadoAnimo, mensaje: (nombre: string) => string): void {
+  private cambiarAnimo(animo: EstadoAnimo, mensaje: string): void {
     const encuentro = this.encuentro();
     if (!encuentro || encuentro.resultado !== 'activo' || this.animando()) {
       return;
     }
     this.encuentro.set({ ...encuentro, animo, turnosAnimo: turnosDeAnimo() });
-    this.registrar(mensaje(encuentro.ficha.nombre), 'info');
+    this.registrar(mensaje, 'info');
     this.comprobarHuida();
   }
 
-  /** Tras un lanzamiento fallido: el Pokémon puede huir y su ánimo se va calmando. */
+  // despues de fallar el pokemon puede huir, y si estaba enojado o comiendo se le va pasando
   private terminarTurno(): void {
     if (this.comprobarHuida()) {
       return;
@@ -276,51 +252,45 @@ export class SafariService {
     if (!encuentro || encuentro.animo === 'tranquilo') {
       return;
     }
-    const restantes = encuentro.turnosAnimo - 1;
-    if (restantes <= 0) {
+    const turnos = encuentro.turnosAnimo - 1;
+    if (turnos <= 0) {
       this.encuentro.set({ ...encuentro, animo: 'tranquilo', turnosAnimo: 0 });
-      this.registrar(`${encuentro.ficha.nombre} volvió a estar tranquilo.`, 'info');
+      this.registrar(`${encuentro.ficha.nombre} se calmó.`, 'info');
     } else {
-      this.encuentro.set({ ...encuentro, turnosAnimo: restantes });
+      this.encuentro.set({ ...encuentro, turnosAnimo: turnos });
     }
   }
 
-  /** Devuelve true si el Pokémon huyó. */
   private comprobarHuida(): boolean {
     const encuentro = this.encuentro();
     if (!encuentro || encuentro.resultado !== 'activo') {
       return false;
     }
-    const probabilidad = probabilidadHuida(
-      velocidadDe(encuentro.ficha),
-      esEspecial(encuentro.ficha),
-      encuentro.animo,
-    );
+    const probabilidad = probabilidadHuida(velocidadDe(encuentro.ficha), esEspecial(encuentro.ficha), encuentro.animo);
     if (Math.random() < probabilidad) {
       this.encuentro.set({ ...encuentro, resultado: 'huyo' });
       this.estadisticas.update((e) => ({ ...e, huidas: e.huidas + 1 }));
-      this.registrar(`¡${encuentro.ficha.nombre} huyó!`, 'fallo');
+      this.registrar(`${encuentro.ficha.nombre} huyó.`, 'fallo');
       return true;
     }
     return false;
   }
 
-  /** Si se acabó la ball elegida, selecciona automáticamente otra que tenga unidades. */
-  private asegurarBallDisponible(): void {
+  private cambiarBallSiSeAcabo(): void {
     const inventario = this.inventario();
     if (inventario[this.ballSeleccionada()] > 0) {
       return;
     }
-    const disponible = ORDEN_BALLS.find((id) => inventario[id] > 0);
-    if (disponible) {
-      this.ballSeleccionada.set(disponible);
+    const otra = ORDEN_BALLS.find((id) => inventario[id] > 0);
+    if (otra) {
+      this.ballSeleccionada.set(otra);
     }
   }
 
   private registrar(texto: string, tipo: EntradaBitacora['tipo']): void {
-    this.contadorBitacora++;
-    const entrada: EntradaBitacora = { id: this.contadorBitacora, texto, tipo };
-    this.bitacora.update((lista) => [entrada, ...lista].slice(0, 12));
+    this.contador++;
+    const entrada: EntradaBitacora = { id: this.contador, texto, tipo };
+    this.bitacora.update((lista) => [entrada, ...lista].slice(0, 10));
   }
 }
 
@@ -328,23 +298,6 @@ function estadisticasIniciales(): Estadisticas {
   return { encuentros: 0, capturas: 0, huidas: 0, lanzamientos: 0 };
 }
 
-function esperar(milisegundos: number): Promise<void> {
-  return new Promise((resolver) => setTimeout(resolver, milisegundos));
-}
-
-function crearUid(): string {
-  return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
-}
-
-function mensajeEscape(nombre: string, sacudidas: number): string {
-  switch (sacudidas) {
-    case 0:
-      return `¡Oh, no! ${nombre} se liberó al instante.`;
-    case 1:
-      return `¡Vaya! ${nombre} escapó después de una sacudida.`;
-    case 2:
-      return `¡Casi! ${nombre} escapó tras dos sacudidas.`;
-    default:
-      return `¡Uf! ¡${nombre} estuvo a punto de quedarse!`;
-  }
+function esperar(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }

@@ -7,26 +7,18 @@
   border: 2px solid #f1c7b9;
   border-radius: var(--radio-sm);
   background: #fff4ef;
-  color: #6b2a17;
-}
-
-.icono {
-  font-size: 1.6rem;
-  line-height: 1;
+  color: #7d3d29;
 }
 
 .texto {
   flex: 1 1 16rem;
 }
 
-.titulo {
-  margin: 0 0 0.2rem;
-  font-family: var(--fuente-titulos);
-  font-size: 1.05rem;
-  font-weight: 600;
+.texto p {
+  margin: 0;
 }
 
-.mensaje {
-  margin: 0;
-  color: #7d3d29;
+.titulo {
+  margin-bottom: 0.2rem !important;
+  font-weight: 800;
 }

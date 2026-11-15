@@ -1,54 +1,29 @@
-<a class="saltar" href="#contenido">Saltar al contenido</a>
-
 <header class="cabecera">
   <div class="contenedor cabecera-contenido">
-    <a routerLink="/" class="marca" (click)="cerrarMenu()" aria-label="Zona Safari, ir al inicio">
-      <svg class="logo" viewBox="0 0 64 64" aria-hidden="true">
-        <rect width="64" height="64" rx="16" fill="#2f7d4a" />
-        <circle cx="44" cy="20" r="9" fill="#ffcb05" />
-        <path d="M10 50c8-14 18-22 30-24-6 6-10 13-11 22" fill="none" stroke="#f5ecd7" stroke-width="5" stroke-linecap="round" />
-        <path d="M29 48c4-9 11-15 21-17" fill="none" stroke="#bfe3a5" stroke-width="5" stroke-linecap="round" />
-      </svg>
-      <span class="marca-texto">Zona <strong>Safari</strong></span>
+    <a routerLink="/" class="marca" (click)="menuAbierto.set(false)">
+      <img src="favicon.svg" alt="" width="36" height="36" />
+      <span>Zona <strong>Safari</strong></span>
     </a>
 
-    <button
-      type="button"
-      class="boton-menu"
-      aria-controls="menu-principal"
-      [attr.aria-expanded]="menuAbierto()"
-      (click)="alternarMenu()"
-    >
-      <span aria-hidden="true">{{ menuAbierto() ? '✕' : '☰' }}</span>
-      <span class="sr-only">Menú</span>
-    </button>
+    <button type="button" class="boton-menu" aria-label="Menú" (click)="menuAbierto.set(!menuAbierto())">☰</button>
 
-    <nav id="menu-principal" class="menu" [class.abierto]="menuAbierto()" aria-label="Navegación principal">
-      <a routerLink="/" routerLinkActive="activo" [routerLinkActiveOptions]="{ exact: true }" (click)="cerrarMenu()">Inicio</a>
-      <a routerLink="/explorar" routerLinkActive="activo" (click)="cerrarMenu()">Explorar</a>
-      <a routerLink="/guia" routerLinkActive="activo" (click)="cerrarMenu()">Guía de campo</a>
-      <a routerLink="/coleccion" routerLinkActive="activo" (click)="cerrarMenu()">
-        Mi colección
-        <span class="contador" [attr.aria-label]="coleccion.total() + ' capturas'">{{ coleccion.total() }}</span>
+    <nav class="menu" [class.abierto]="menuAbierto()">
+      <a routerLink="/" routerLinkActive="activo" [routerLinkActiveOptions]="{ exact: true }" (click)="menuAbierto.set(false)">Inicio</a>
+      <a routerLink="/explorar" routerLinkActive="activo" (click)="menuAbierto.set(false)">Explorar</a>
+      <a routerLink="/guia" routerLinkActive="activo" (click)="menuAbierto.set(false)">Pokédex</a>
+      <a routerLink="/coleccion" routerLinkActive="activo" (click)="menuAbierto.set(false)">
+        Mi colección <span class="contador">{{ coleccion.total() }}</span>
       </a>
     </nav>
   </div>
 </header>
 
-<main id="contenido" tabindex="-1">
+<main>
   <router-outlet />
 </main>
 
 <footer class="pie">
-  <div class="contenedor pie-contenido">
-    <p>
-      <strong>Zona Safari</strong> · Práctica 02 de Programación y Plataformas Web · Universidad Politécnica
-      Salesiana · {{ anio }}
-    </p>
-    <p>
-      Desarrollado por Erick Bermeo con Angular. Datos e imágenes:
-      <a href="https://pokeapi.co" target="_blank" rel="noopener">PokéAPI</a>. Pokémon es marca de Nintendo,
-      Game Freak y Creatures; proyecto académico sin fines de lucro.
-    </p>
+  <div class="contenedor">
+    <p>Hecho por Erick Bermeo. Datos obtenidos de <a href="https://pokeapi.co" target="_blank">PokéAPI</a>.</p>
   </div>
 </footer>

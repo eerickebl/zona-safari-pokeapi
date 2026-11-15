@@ -106,7 +106,6 @@ h2 {
   color: var(--texto-suave);
 }
 
-/* Se adapta al ancho de su contenedor (página o ventana modal). */
 @container (min-width: 620px) {
   .ficha {
     grid-template-columns: 14rem 1fr;

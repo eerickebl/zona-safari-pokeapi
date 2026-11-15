@@ -1,55 +1,50 @@
-<section class="mochila tarjeta" aria-labelledby="titulo-mochila">
-  <header class="cabecera">
-    <h2 id="titulo-mochila">🎒 Tu mochila</h2>
+<section class="mochila tarjeta">
+  <div class="cabecera">
+    <h2>Mochila</h2>
     <span class="chip chip-verde">{{ total() }} balls</span>
-  </header>
+  </div>
 
   @if (error()) {
     <p class="aviso">
-      No se pudieron cargar los datos de las balls desde /item; se usan nombres de respaldo.
+      No se pudo cargar la información de las balls.
       <button type="button" class="enlace" (click)="reintentar.emit()">Reintentar</button>
     </p>
   }
 
   <ul class="balls">
     @for (ball of balls(); track ball.id) {
-      @let cantidad = inventario()[ball.id];
-      <li [class.agotada]="cantidad === 0">
-        @if (ball.sprite) {
-          <img [src]="ball.sprite" [alt]="ball.nombre" width="36" height="36" />
-        } @else {
-          <span class="sin-imagen" aria-hidden="true">●</span>
-        }
+      <li [class.agotada]="inventario()[ball.id] === 0">
+        <img [src]="ball.sprite" [alt]="ball.nombre" width="36" height="36" />
         <div class="info">
-          <p class="nombre">{{ ball.nombre }} <span class="bono">bono ×{{ ball.bono }}</span></p>
+          <p class="nombre">{{ ball.nombre }} <span class="bono">x{{ ball.bono }}</span></p>
           @if (ball.descripcion) {
             <p class="descripcion">{{ ball.descripcion }}</p>
           }
-          <p class="precio">{{ textoPrecio(ball) }}</p>
+          <p class="precio">{{ precio(ball) }}</p>
         </div>
-        <span class="cantidad" [attr.aria-label]="cantidad + ' unidades'">×{{ cantidad }}</span>
+        <span class="cantidad">{{ inventario()[ball.id] }}</span>
       </li>
     }
   </ul>
 
-  <dl class="estadisticas">
+  <div class="estadisticas">
     <div>
-      <dt>Encuentros</dt>
-      <dd>{{ estadisticas().encuentros }}</dd>
+      <span>Encuentros</span>
+      <strong>{{ estadisticas().encuentros }}</strong>
     </div>
     <div>
-      <dt>Capturas</dt>
-      <dd>{{ estadisticas().capturas }}</dd>
+      <span>Capturas</span>
+      <strong>{{ estadisticas().capturas }}</strong>
     </div>
     <div>
-      <dt>Huidas</dt>
-      <dd>{{ estadisticas().huidas }}</dd>
+      <span>Huidas</span>
+      <strong>{{ estadisticas().huidas }}</strong>
     </div>
     <div>
-      <dt>Efectividad</dt>
-      <dd>{{ efectividad() | porcentaje }}</dd>
+      <span>Efectividad</span>
+      <strong>{{ efectividad() | porcentaje }}</strong>
     </div>
-  </dl>
+  </div>
 
   <button
     type="button"
@@ -57,9 +52,9 @@
     [class.btn-peligro]="confirmando()"
     [class.btn-secundario]="!confirmando()"
     [disabled]="bloqueado()"
-    (click)="pedirNuevaExpedicion()"
+    (click)="clicReiniciar()"
     (blur)="confirmando.set(false)"
   >
-    {{ confirmando() ? '¿Seguro? Se reinicia la mochila' : '🔄 Nueva expedición' }}
+    {{ confirmando() ? '¿Seguro? Haz clic otra vez' : 'Reiniciar mochila' }}
   </button>
 </section>

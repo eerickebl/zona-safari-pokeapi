@@ -1,24 +1,14 @@
 <section class="contenedor pagina">
-  <header class="encabezado">
-    <p class="eyebrow">Expedición</p>
-    <h1>Explora la Zona Safari</h1>
-    <p class="subtitulo">
-      Elige un hábitat, camina por la hierba y usa tu mochila con estrategia: te quedan
-      <strong>{{ safari.totalBalls() }}</strong> balls.
-    </p>
-  </header>
+  <h1>Explorar</h1>
+  <p class="subtitulo">Elige un hábitat y busca Pokémon. Te quedan {{ safari.totalBalls() }} balls.</p>
 
   <div class="disposicion">
-    <aside class="columna-habitats" aria-labelledby="titulo-habitats">
-      <h2 id="titulo-habitats" class="titulo-seccion">1. Elige un hábitat</h2>
+    <div class="columna-habitats">
+      <h2 class="titulo-seccion">Hábitats</h2>
       @if (cargando()) {
-        <app-cargando mensaje="Cargando hábitats desde PokéAPI…" />
+        <app-cargando mensaje="Cargando hábitats..." />
       } @else if (error(); as mensaje) {
-        <app-mensaje-error
-          titulo="No se pudieron cargar los hábitats"
-          [mensaje]="mensaje"
-          (reintentar)="cargarHabitats()"
-        />
+        <app-mensaje-error titulo="No se pudieron cargar los hábitats" [mensaje]="mensaje" (reintentar)="cargarHabitats()" />
       } @else {
         <app-selector-habitat
           [habitats]="habitats()"
@@ -28,16 +18,13 @@
           (elegir)="elegirHabitat($event)"
         />
       }
-    </aside>
+    </div>
 
-    <div class="columna-juego" #panel>
-      <h2 class="titulo-seccion">2. Explora y captura</h2>
-
+    <div class="columna-juego" id="panel">
       @if (habitatInexistente(); as nombre) {
         <app-mensaje-error
-          icono="🧭"
           titulo="Hábitat no encontrado"
-          [mensaje]="'PokéAPI no tiene un hábitat llamado «' + nombre + '». Elige uno de la lista.'"
+          [mensaje]="'No existe un hábitat llamado ' + nombre + '. Elige uno de la lista.'"
           [conBoton]="false"
         />
       }
@@ -46,8 +33,7 @@
         <app-panel-encuentro [habitat]="habitat" />
       } @else if (!cargando() && !error() && !habitatInexistente()) {
         <div class="vacio tarjeta">
-          <span class="icono-grande" aria-hidden="true">🗺️</span>
-          <p><strong>Selecciona un hábitat</strong> para empezar a buscar Pokémon salvajes.</p>
+          <p>Selecciona un hábitat para empezar.</p>
         </div>
       }
 
@@ -58,7 +44,7 @@
         [error]="safari.errorBalls()"
         [bloqueado]="safari.animando()"
         (reintentar)="safari.cargarBalls()"
-        (nuevaExpedicion)="safari.nuevaExpedicion()"
+        (reiniciar)="safari.nuevaExpedicion()"
       />
     </div>
   </div>

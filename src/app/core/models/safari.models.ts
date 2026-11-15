@@ -1,9 +1,3 @@
-/**
- * Modelos propios de la aplicación. Los datos de PokéAPI se transforman a estas
- * estructuras (ver core/utils/mapeadores.ts) para que los componentes no dependan
- * del formato crudo de la API.
- */
-
 export type IdBall = 'safari-ball' | 'poke-ball' | 'great-ball' | 'ultra-ball';
 
 export type EstadoAnimo = 'tranquilo' | 'enojado' | 'comiendo';
@@ -18,8 +12,6 @@ export interface EspecieRef {
 export interface Habitat {
   nombre: string;
   etiqueta: string;
-  descripcion: string;
-  icono: string;
   color: string;
   especies: EspecieRef[];
 }
@@ -30,7 +22,6 @@ export interface StatPokemon {
   valor: number;
 }
 
-/** Ficha combinada de /pokemon-species + /pokemon. */
 export interface FichaPokemon {
   id: number;
   nombreApi: string;
@@ -55,7 +46,6 @@ export interface FichaPokemon {
   grito: string | null;
 }
 
-/** Datos de una ball obtenidos de /item más la regla de captura propia. */
 export interface BallInfo {
   id: IdBall;
   nombre: string;

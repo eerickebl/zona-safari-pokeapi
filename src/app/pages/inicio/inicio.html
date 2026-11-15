@@ -1,123 +1,52 @@
 <section class="portada">
   <div class="contenedor portada-contenido">
-    <div class="portada-texto">
-      <p class="eyebrow">Angular + PokéAPI</p>
-      <h1>Bienvenido a la <span>Zona Safari</span></h1>
+    <div>
+      <h1>Zona Safari</h1>
       <p class="subtitulo">
-        Recorre hábitats reales de PokéAPI, encuentra Pokémon salvajes y decide cómo atraparlos: cada
-        lanzamiento tiene una probabilidad calculada con los datos de la especie.
+        Elige un hábitat, busca Pokémon salvajes y trata de atraparlos con las balls de tu mochila. Los que atrapes se
+        guardan en tu colección.
       </p>
       <div class="acciones">
-        <a routerLink="/explorar" class="btn btn-acento btn-grande">👣 Comenzar expedición</a>
-        <a routerLink="/guia" class="btn btn-secundario btn-grande">📖 Guía de campo</a>
+        <a routerLink="/explorar" class="btn btn-acento btn-grande">Empezar</a>
+        <a routerLink="/guia" class="btn btn-secundario btn-grande">Pokédex</a>
       </div>
     </div>
-    <div class="portada-imagenes" aria-hidden="true">
-      @for (imagen of portada; track imagen) {
-        <img [src]="imagen" alt="" width="180" height="180" />
+    <div class="portada-imagenes">
+      @for (imagen of imagenes; track imagen) {
+        <img [src]="imagen" alt="Pokémon" width="180" height="180" />
       }
     </div>
   </div>
 </section>
 
 <div class="contenedor">
-  <section class="progreso tarjeta" aria-labelledby="titulo-progreso">
-    <div>
-      <h2 id="titulo-progreso">Tu Pokédex Safari</h2>
-      <p class="nota">Las capturas se guardan en este navegador.</p>
+  <section class="tarjeta progreso">
+    <h2>Mi progreso</h2>
+    <div class="cifras">
+      <div>
+        <span>Capturas</span>
+        <strong>{{ coleccion.total() }}</strong>
+      </div>
+      <div>
+        <span>Especies</span>
+        <strong>{{ coleccion.especiesUnicas() }}</strong>
+      </div>
+      <div>
+        <span>Shiny</span>
+        <strong>{{ coleccion.shinies() }}</strong>
+      </div>
     </div>
-    <dl class="cifras">
-      <div>
-        <dt>Capturas</dt>
-        <dd>{{ coleccion.total() }}</dd>
-      </div>
-      <div>
-        <dt>Especies</dt>
-        <dd>
-          {{ coleccion.especiesUnicas() }}
-          @if (totalEspecies(); as total) {
-            <small>/ {{ total }}</small>
-          }
-        </dd>
-      </div>
-      <div>
-        <dt>Shiny</dt>
-        <dd>{{ coleccion.shinies() }}</dd>
-      </div>
-    </dl>
-    <div class="barra" role="progressbar" aria-label="Especies registradas" aria-valuemin="0" aria-valuemax="100" [attr.aria-valuenow]="progreso()">
-      <span [style.width.%]="progreso()"></span>
-    </div>
-    <a routerLink="/coleccion" class="btn btn-fantasma btn-pequeno">Ver mi colección →</a>
+    <a routerLink="/coleccion" class="btn btn-fantasma btn-pequeno">Ver colección</a>
   </section>
 
-  <section class="seccion" aria-labelledby="titulo-pasos">
-    <h2 id="titulo-pasos">¿Cómo se juega?</h2>
-    <ol class="pasos">
-      <li class="tarjeta">
-        <span class="paso-icono" aria-hidden="true">🗺️</span>
-        <h3>1. Elige un hábitat</h3>
-        <p>Pradera, bosque, mar, cueva… Cada hábitat tiene sus propias especies según PokéAPI.</p>
-      </li>
-      <li class="tarjeta">
-        <span class="paso-icono" aria-hidden="true">🌿</span>
-        <h3>2. Camina por la hierba</h3>
-        <p>Aparece un Pokémon al azar de ese hábitat, con 1 de 64 posibilidades de que sea shiny.</p>
-      </li>
-      <li class="tarjeta">
-        <span class="paso-icono" aria-hidden="true">🎯</span>
-        <h3>3. Lanza con estrategia</h3>
-        <p>Usa balls, rocas o cebos. Tu mochila es limitada y el Pokémon puede huir en cualquier turno.</p>
-      </li>
+  <section class="tarjeta como-jugar">
+    <h2>¿Cómo se juega?</h2>
+    <ol>
+      <li>Entra a Explorar y elige un hábitat (pradera, bosque, cueva, mar, etc.).</li>
+      <li>Busca un Pokémon. Aparece uno al azar de los que viven en ese hábitat.</li>
+      <li>Lanza una ball para atraparlo. Cada Pokémon tiene una tasa de captura diferente.</li>
+      <li>La roca hace que sea más fácil atraparlo, pero también que huya más. El cebo hace lo contrario.</li>
+      <li>Si fallas, el Pokémon puede huir. Cuando se acaban las balls se termina la partida.</li>
     </ol>
-  </section>
-
-  <section class="seccion reglas tarjeta" aria-labelledby="titulo-reglas">
-    <h2 id="titulo-reglas">Reglas de la Zona Safari</h2>
-    <div class="reglas-grilla">
-      <div>
-        <h3>Probabilidad de captura</h3>
-        <p>
-          Se usa la fórmula de captura de la 3.ª generación: con la <strong>tasa de captura</strong> de la
-          especie y el <strong>bono de la ball</strong> se calcula
-          <code>a = tasa × bono ÷ 3</code>; la ball debe superar 4 comprobaciones con probabilidad
-          <code>b ÷ 65536</code> cada una, donde <code>b = 1048560 ÷ √√(16711680 ÷ a)</code>.
-        </p>
-      </div>
-      <div>
-        <h3>Rocas y cebos</h3>
-        <p>
-          🪨 La roca enoja al Pokémon por 1–5 turnos: duplica la tasa de captura, pero también la
-          probabilidad de huida. 🍓 El cebo lo distrae: huye la mitad de veces, pero cuesta el doble atraparlo.
-        </p>
-      </div>
-      <div>
-        <h3>Huida</h3>
-        <p>
-          Después de cada lanzamiento fallido el Pokémon puede huir. La probabilidad por turno es
-          <code>5 % + velocidad ÷ 400</code> (+10 % si es legendario o mítico).
-        </p>
-      </div>
-      <div>
-        <h3>Mochila</h3>
-        <p>
-          Cada expedición empieza con 10 Safari Ball (×1,5), 15 Poké Ball (×1), 8 Super Ball (×1,5) y 4 Ultra
-          Ball (×2). Cuando se acaban, la expedición termina.
-        </p>
-      </div>
-    </div>
-  </section>
-
-  <section class="seccion" aria-labelledby="titulo-endpoints">
-    <h2 id="titulo-endpoints">Datos de PokéAPI que usa la aplicación</h2>
-    <ul class="endpoints">
-      @for (endpoint of endpoints; track endpoint.ruta) {
-        <li class="tarjeta">
-          <code class="ruta">GET {{ endpoint.ruta }}</code>
-          <p>{{ endpoint.uso }}</p>
-          <p class="ejemplo">Ejemplo: <code>https://pokeapi.co/api/v2{{ endpoint.ejemplo }}</code></p>
-        </li>
-      }
-    </ul>
   </section>
 </div>

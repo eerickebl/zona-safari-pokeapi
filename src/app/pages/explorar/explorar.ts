@@ -1,8 +1,5 @@
-import { Location } from '@angular/common';
-import { Component, DestroyRef, ElementRef, computed, effect, inject, input, signal, untracked, viewChild } from '@angular/core';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { ActivatedRoute, Router } from '@angular/router';
-import { finalize } from 'rxjs';
+import { Component, computed, inject, signal } from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
 
 import { Habitat } from '../../core/models/safari.models';
 import { ColeccionService } from '../../core/services/coleccion.service';
@@ -15,7 +12,6 @@ import { Mochila } from './mochila/mochila';
 import { PanelEncuentro } from './panel-encuentro/panel-encuentro';
 import { SelectorHabitat } from './selector-habitat/selector-habitat';
 
-/** Página principal del juego: hábitats (izquierda), encuentro y mochila. */
 @Component({
   selector: 'app-explorar',
   imports: [Cargando, MensajeError, SelectorHabitat, PanelEncuentro, Mochila],
@@ -23,76 +19,58 @@ import { SelectorHabitat } from './selector-habitat/selector-habitat';
   styleUrl: './explorar.css',
 })
 export class Explorar {
-  private readonly api = inject(PokeApiService);
-  private readonly router = inject(Router);
-  private readonly ruta = inject(ActivatedRoute);
-  private readonly location = inject(Location);
-  private readonly destroyRef = inject(DestroyRef);
-  protected readonly safari = inject(SafariService);
-  protected readonly coleccion = inject(ColeccionService);
+  private api = inject(PokeApiService);
+  private ruta = inject(ActivatedRoute);
+  safari = inject(SafariService);
+  coleccion = inject(ColeccionService);
 
-  /** Query param opcional: /explorar?habitat=forest */
-  readonly habitat = input<string>();
+  habitats = signal<Habitat[]>([]);
+  cargando = signal(true);
+  error = signal<string | null>(null);
 
-  protected readonly habitats = signal<Habitat[]>([]);
-  protected readonly cargando = signal(true);
-  protected readonly error = signal<string | null>(null);
+  habitatActual = computed(() => this.habitats().find((h) => h.nombre === this.safari.habitatSeleccionado()) ?? null);
 
-  private readonly panel = viewChild<ElementRef<HTMLElement>>('panel');
-
-  protected readonly habitatActual = computed(
-    () => this.habitats().find((h) => h.nombre === this.safari.habitatSeleccionado()) ?? null,
-  );
-
-  /** Nombre del hábitat pedido en la URL que no existe en PokéAPI (resultado inexistente). */
-  protected readonly habitatInexistente = computed(() => {
-    const seleccionado = this.safari.habitatSeleccionado();
-    if (!seleccionado || this.cargando() || this.error()) {
+  // cuando en la url viene un habitat que no existe, por ejemplo /explorar?habitat=playa
+  habitatInexistente = computed(() => {
+    const nombre = this.safari.habitatSeleccionado();
+    if (!nombre || this.cargando() || this.error()) {
       return null;
     }
-    return this.habitats().some((h) => h.nombre === seleccionado) ? null : seleccionado;
+    return this.habitats().some((h) => h.nombre === nombre) ? null : nombre;
   });
 
-  protected readonly bloqueado = computed(
-    () => this.safari.encuentroActivo() || this.safari.animando() || this.safari.buscando(),
-  );
+  bloqueado = computed(() => this.safari.encuentroActivo() || this.safari.animando() || this.safari.buscando());
 
   constructor() {
+    // desde la pokedex se puede llegar con ?habitat=forest
+    const habitat = this.ruta.snapshot.queryParamMap.get('habitat');
+    if (habitat) {
+      this.safari.seleccionarHabitat(habitat);
+    }
     this.cargarHabitats();
     this.safari.cargarBalls();
+  }
 
-    // Si la URL trae ?habitat=..., se selecciona ese hábitat.
-    effect(() => {
-      const desdeUrl = this.habitat();
-      if (desdeUrl) {
-        untracked(() => this.safari.seleccionarHabitat(desdeUrl));
-      }
+  cargarHabitats(): void {
+    this.cargando.set(true);
+    this.error.set(null);
+    this.api.listarHabitats().subscribe({
+      next: (habitats) => {
+        this.habitats.set(habitats);
+        this.cargando.set(false);
+      },
+      error: (error) => {
+        this.error.set(mensajeDeError(error));
+        this.cargando.set(false);
+      },
     });
   }
 
-  protected cargarHabitats(): void {
-    this.cargando.set(true);
-    this.error.set(null);
-    this.api
-      .listarHabitats()
-      .pipe(
-        finalize(() => this.cargando.set(false)),
-        takeUntilDestroyed(this.destroyRef),
-      )
-      .subscribe({
-        next: (habitats) => this.habitats.set(habitats),
-        error: (error: unknown) => this.error.set(mensajeDeError(error)),
-      });
-  }
-
-  protected elegirHabitat(nombre: string): void {
+  elegirHabitat(nombre: string): void {
     this.safari.seleccionarHabitat(nombre);
-    // Se actualiza la URL (?habitat=...) sin volver a navegar, para no perder la posición del scroll.
-    const url = this.router.createUrlTree([], { relativeTo: this.ruta, queryParams: { habitat: nombre } });
-    this.location.replaceState(this.router.serializeUrl(url));
-    // En pantallas pequeñas se baja hasta el panel del encuentro.
-    if (window.matchMedia('(max-width: 999px)').matches) {
-      this.panel()?.nativeElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    // en el celular la lista es larga, entonces se baja hasta el panel
+    if (window.innerWidth < 1000) {
+      document.getElementById('panel')?.scrollIntoView({ behavior: 'smooth' });
     }
   }
 }

@@ -10,7 +10,6 @@ import { MensajeError } from '../../../shared/components/mensaje-error/mensaje-e
 import { TipoBadge } from '../../../shared/components/tipo-badge/tipo-badge';
 import { PorcentajePipe } from '../../../shared/pipes/porcentaje.pipe';
 
-/** Escena del encuentro: aparición, lanzamientos con animación, resultado y bitácora. */
 @Component({
   selector: 'app-panel-encuentro',
   imports: [RouterLink, Cargando, MensajeError, TipoBadge, PorcentajePipe],
@@ -18,87 +17,83 @@ import { PorcentajePipe } from '../../../shared/pipes/porcentaje.pipe';
   styleUrl: './panel-encuentro.css',
 })
 export class PanelEncuentro {
-  readonly habitat = input.required<Habitat>();
+  habitat = input.required<Habitat>();
 
-  protected readonly safari = inject(SafariService);
-  protected readonly numero = numeroPokedex;
+  safari = inject(SafariService);
+  numero = numeroPokedex;
 
-  /** Imagen animada (si existe) o sprite normal; versión shiny cuando corresponde. */
-  protected readonly imagen = computed(() => {
-    const encuentro = this.safari.encuentro();
-    if (!encuentro) {
+  // si el pokemon tiene gif animado se usa ese, si no el sprite normal
+  imagen = computed(() => {
+    const e = this.safari.encuentro();
+    if (!e) {
       return '';
     }
-    const { ficha, shiny } = encuentro;
-    return shiny ? (ficha.animadoShiny ?? ficha.spriteShiny) : (ficha.animado ?? ficha.sprite);
+    if (e.shiny) {
+      return e.ficha.animadoShiny ?? e.ficha.spriteShiny;
+    }
+    return e.ficha.animado ?? e.ficha.sprite;
   });
 
-  protected readonly esPixelArt = computed(() => {
-    const encuentro = this.safari.encuentro();
-    if (!encuentro) {
+  tieneAnimacion = computed(() => {
+    const e = this.safari.encuentro();
+    if (!e) {
       return false;
     }
-    return encuentro.shiny ? !encuentro.ficha.animadoShiny : !encuentro.ficha.animado;
+    return e.shiny ? e.ficha.animadoShiny !== null : e.ficha.animado !== null;
   });
 
-  protected readonly velocidad = computed(() => {
-    const encuentro = this.safari.encuentro();
-    return encuentro ? velocidadDe(encuentro.ficha) : 0;
+  velocidad = computed(() => {
+    const e = this.safari.encuentro();
+    return e ? velocidadDe(e.ficha) : 0;
   });
 
-  protected readonly textoAnimo = computed(() => {
-    const encuentro = this.safari.encuentro();
-    if (!encuentro) {
+  textoAnimo = computed(() => {
+    const e = this.safari.encuentro();
+    if (!e || e.animo === 'tranquilo') {
+      return 'Tranquilo';
+    }
+    const turnos = e.turnosAnimo === 1 ? '1 turno' : e.turnosAnimo + ' turnos';
+    return (e.animo === 'enojado' ? 'Enojado' : 'Comiendo') + ' (' + turnos + ')';
+  });
+
+  textoResultado = computed(() => {
+    const e = this.safari.encuentro();
+    if (!e) {
       return '';
     }
-    const turnos = `${encuentro.turnosAnimo} ${encuentro.turnosAnimo === 1 ? 'turno' : 'turnos'}`;
-    switch (encuentro.animo) {
-      case 'enojado':
-        return `😠 Enojado · ${turnos}`;
-      case 'comiendo':
-        return `😋 Comiendo · ${turnos}`;
-      default:
-        return '😐 Tranquilo';
+    if (e.resultado === 'capturado') {
+      return '¡Atrapaste a ' + e.ficha.nombre + '!';
     }
+    if (e.resultado === 'huyo') {
+      return e.ficha.nombre + ' huyó.';
+    }
+    return 'Te alejaste de ' + e.ficha.nombre + '.';
   });
 
-  protected readonly tituloResultado = computed(() => {
-    const encuentro = this.safari.encuentro();
-    if (!encuentro) {
-      return '';
+  textoSacudidas = computed(() => {
+    const n = this.safari.sacudidas();
+    if (n === 0) {
+      return 'Lanzando...';
     }
-    const nombre = encuentro.ficha.nombre;
-    switch (encuentro.resultado) {
-      case 'capturado':
-        return `¡Atrapaste a ${nombre}! 🎉`;
-      case 'huyo':
-        return `${nombre} huyó…`;
-      case 'escapaste':
-        return `Te alejaste de ${nombre}.`;
-      default:
-        return '';
-    }
+    return n === 1 ? 'Se movió 1 vez...' : 'Se movió ' + n + ' veces...';
   });
 
-  protected explorar(): void {
+  buscar(): void {
     this.safari.explorar(this.habitat());
   }
 
-  protected seguirExplorando(): void {
+  seguirBuscando(): void {
     this.safari.continuar();
     this.safari.explorar(this.habitat());
   }
 
-  protected lanzar(): void {
-    void this.safari.lanzarBall();
+  lanzar(): void {
+    this.safari.lanzarBall();
   }
 
-  protected reproducirGrito(url: string | null): void {
-    if (!url) {
-      return;
-    }
+  escucharGrito(url: string): void {
     const audio = new Audio(url);
-    audio.volume = 0.35;
-    audio.play().catch(() => undefined);
+    audio.volume = 0.4;
+    audio.play().catch(() => {});
   }
 }

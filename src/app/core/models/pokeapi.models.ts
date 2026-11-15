@@ -1,16 +1,10 @@
-/**
- * Interfaces con la forma (parcial) de las respuestas de PokéAPI v2.
- * Solo se declaran los campos que la aplicación utiliza.
- * Documentación: https://pokeapi.co/docs/v2
- */
+// Datos que se usan de cada endpoint de PokéAPI (https://pokeapi.co/docs/v2)
 
-/** Referencia a otro recurso: { name, url }. */
 export interface RecursoApi {
   name: string;
   url: string;
 }
 
-/** Respuesta de los endpoints de listado, por ejemplo /pokemon-habitat o /pokemon-species?limit=N. */
 export interface ListaApi {
   count: number;
   next: string | null;
@@ -23,7 +17,6 @@ export interface NombreLocalizado {
   language: RecursoApi;
 }
 
-/** GET /pokemon-habitat/{nombre} */
 export interface HabitatApi {
   id: number;
   name: string;
@@ -31,7 +24,6 @@ export interface HabitatApi {
   pokemon_species: RecursoApi[];
 }
 
-/** GET /pokemon-species/{id o nombre} */
 export interface EspecieApi {
   id: number;
   name: string;
@@ -51,7 +43,6 @@ export interface ImagenesApi {
   front_shiny: string | null;
 }
 
-/** GET /pokemon/{id o nombre} */
 export interface PokemonApi {
   id: number;
   name: string;
@@ -68,13 +59,10 @@ export interface PokemonApi {
   cries?: { latest: string | null; legacy: string | null };
 }
 
-/** GET /item/{nombre} */
 export interface ItemApi {
   id: number;
   name: string;
-  /** Precios por versión de juego (reemplaza al antiguo campo "cost"). */
   prices?: { purchase_price: number; sell_price: number; version_group: RecursoApi }[];
-  cost?: number;
   sprites: { default: string | null };
   names: NombreLocalizado[];
   flavor_text_entries: { text: string; language: RecursoApi; version_group: RecursoApi }[];

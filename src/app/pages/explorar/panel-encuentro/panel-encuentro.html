@@ -1,46 +1,41 @@
-<section class="panel tarjeta" [style.--color-habitat]="habitat().color" aria-labelledby="titulo-habitat">
-  <header class="panel-cabecera">
-    <span class="icono" aria-hidden="true">{{ habitat().icono }}</span>
-    <div>
-      <h3 id="titulo-habitat">{{ habitat().etiqueta }}</h3>
-      <p>{{ habitat().especies.length }} especies viven aquí · {{ habitat().descripcion }}</p>
-    </div>
-  </header>
+<section class="panel tarjeta" [style.border-top-color]="habitat().color">
+  <div class="cabecera">
+    <h3>{{ habitat().etiqueta }}</h3>
+    <p class="nota">En este hábitat viven {{ habitat().especies.length }} especies.</p>
+  </div>
 
-  <div class="escena" aria-live="polite">
+  <div class="escena">
     @if (safari.buscando()) {
-      <app-cargando mensaje="Caminando por la hierba alta…" />
+      <app-cargando mensaje="Buscando Pokémon..." />
     } @else if (safari.errorBusqueda(); as mensaje) {
-      <app-mensaje-error titulo="No apareció ningún Pokémon" [mensaje]="mensaje" (reintentar)="explorar()" />
+      <app-mensaje-error titulo="No apareció ningún Pokémon" [mensaje]="mensaje" (reintentar)="buscar()" />
     } @else if (safari.encuentro(); as e) {
-      <div class="encuentro" [attr.data-resultado]="e.resultado">
+      <div
+        class="encuentro"
+        [class.capturado]="e.resultado === 'capturado'"
+        [class.perdido]="e.resultado === 'huyo' || e.resultado === 'escapaste'"
+      >
         <div class="arena">
-          <span class="sombra" aria-hidden="true"></span>
           <img
             class="pokemon"
-            [class.pixel]="esPixelArt()"
-            [class.animado]="!esPixelArt()"
+            [class.animado]="tieneAnimacion()"
             [class.oculto]="safari.animando()"
             [src]="imagen()"
-            [alt]="e.ficha.nombre + (e.shiny ? ' shiny' : '')"
+            [alt]="e.ficha.nombre"
           />
           @if (safari.animando()) {
-            <div class="ball-en-juego" [attr.data-sacudida]="safari.sacudidas()">
-              @if (safari.ballActual().sprite) {
-                <img [src]="safari.ballActual().sprite" [alt]="safari.ballActual().nombre" width="64" height="64" />
-              } @else {
-                <span class="ball-respaldo" aria-hidden="true">●</span>
-              }
-              <p>{{ safari.sacudidas() === 0 ? '¡Ball lanzada!' : 'Sacudida ' + safari.sacudidas() + ' de 3…' }}</p>
+            <div class="ball-lanzada">
+              <img [src]="safari.ballActual().sprite" [alt]="safari.ballActual().nombre" width="64" height="64" />
+              <p>{{ textoSacudidas() }}</p>
             </div>
           }
           @if (e.shiny) {
-            <span class="chip chip-dorado brillo">✨ Shiny</span>
+            <span class="chip chip-dorado shiny">Shiny</span>
           }
         </div>
 
         <div class="datos">
-          <p class="numero">{{ numero(e.ficha.id) }} · {{ e.ficha.categoria }}</p>
+          <p class="numero">{{ numero(e.ficha.id) }} - {{ e.ficha.categoria }}</p>
           <h4>{{ e.ficha.nombre }}</h4>
           <div class="etiquetas">
             @for (tipo of e.ficha.tipos; track tipo) {
@@ -53,15 +48,14 @@
               <span class="chip chip-morado">Mítico</span>
             }
           </div>
-          <p class="animo" [attr.data-animo]="e.animo">{{ textoAnimo() }}</p>
-          <p class="detalle">
-            Tasa de captura <strong>{{ e.ficha.tasaCaptura }}</strong>/255 · Velocidad
-            <strong>{{ velocidad() }}</strong> · Lanzamientos <strong>{{ e.intentos }}</strong>
+          <p class="animo" [class.enojado]="e.animo === 'enojado'" [class.comiendo]="e.animo === 'comiendo'">
+            Estado: {{ textoAnimo() }}
           </p>
-          @if (e.ficha.grito) {
-            <button type="button" class="btn btn-fantasma btn-pequeno" (click)="reproducirGrito(e.ficha.grito)">
-              🔊 Escuchar grito
-            </button>
+          <p class="detalle">
+            Tasa de captura: {{ e.ficha.tasaCaptura }} | Velocidad: {{ velocidad() }} | Lanzamientos: {{ e.intentos }}
+          </p>
+          @if (e.ficha.grito; as grito) {
+            <button type="button" class="btn btn-fantasma btn-pequeno" (click)="escucharGrito(grito)">Escuchar grito</button>
           }
         </div>
       </div>
@@ -69,124 +63,101 @@
       @if (e.resultado === 'activo') {
         <div class="medidores">
           <div class="medidor">
-            <span class="etiqueta">Captura con {{ safari.ballActual().nombre }}</span>
+            <span>Probabilidad de captura</span>
             <strong>{{ safari.probabilidadCapturaActual() | porcentaje }}</strong>
-            <span class="barra"><span class="exito" [style.width.%]="safari.probabilidadCapturaActual() * 100"></span></span>
+            <span class="barra"><span class="verde" [style.width.%]="safari.probabilidadCapturaActual() * 100"></span></span>
           </div>
           <div class="medidor">
-            <span class="etiqueta">Huida por turno</span>
+            <span>Probabilidad de que huya</span>
             <strong>{{ safari.probabilidadHuidaActual() | porcentaje }}</strong>
-            <span class="barra"><span class="peligro" [style.width.%]="safari.probabilidadHuidaActual() * 100"></span></span>
+            <span class="barra"><span class="rojo" [style.width.%]="safari.probabilidadHuidaActual() * 100"></span></span>
           </div>
         </div>
 
-        <div class="acciones">
-          <div class="selector-balls" role="radiogroup" aria-label="Ball que vas a lanzar">
-            @for (ball of safari.balls(); track ball.id) {
-              @let cantidad = safari.inventario()[ball.id];
-              <button
-                type="button"
-                role="radio"
-                class="opcion-ball"
-                [class.activa]="ball.id === safari.ballSeleccionada()"
-                [attr.aria-checked]="ball.id === safari.ballSeleccionada()"
-                [disabled]="cantidad === 0 || !safari.puedeActuar()"
-                [title]="ball.nombre + ' · bono ×' + ball.bono"
-                (click)="safari.seleccionarBall(ball.id)"
-              >
-                @if (ball.sprite) {
-                  <img [src]="ball.sprite" alt="" width="30" height="30" />
-                }
-                <span class="nombre">{{ ball.nombre }}</span>
-                <span class="cantidad">{{ cantidad }}</span>
-              </button>
-            }
-          </div>
-
-          <div class="botones">
+        <div class="selector-balls">
+          @for (ball of safari.balls(); track ball.id) {
             <button
               type="button"
-              class="btn btn-primario btn-grande"
-              [disabled]="!safari.puedeActuar() || safari.inventario()[safari.ballSeleccionada()] === 0"
-              (click)="lanzar()"
+              class="opcion-ball"
+              [class.activa]="ball.id === safari.ballSeleccionada()"
+              [disabled]="safari.inventario()[ball.id] === 0 || !safari.puedeActuar()"
+              (click)="safari.seleccionarBall(ball.id)"
             >
-              🎯 Lanzar {{ safari.ballActual().nombre }}
+              <img [src]="ball.sprite" alt="" width="30" height="30" />
+              {{ ball.nombre }}
+              <span class="cantidad">{{ safari.inventario()[ball.id] }}</span>
             </button>
-            <button
-              type="button"
-              class="btn btn-secundario"
-              [disabled]="!safari.puedeActuar()"
-              title="Captura ×2, huida ×2 durante 1–5 turnos"
-              (click)="safari.lanzarRoca()"
-            >
-              🪨 Roca
-            </button>
-            <button
-              type="button"
-              class="btn btn-secundario"
-              [disabled]="!safari.puedeActuar()"
-              title="Captura ×0,5, huida ×0,5 durante 1–5 turnos"
-              (click)="safari.lanzarCebo()"
-            >
-              🍓 Cebo
-            </button>
-            <button type="button" class="btn btn-fantasma" [disabled]="!safari.puedeActuar()" (click)="safari.huir()">
-              🏃 Huir
-            </button>
-          </div>
-          @if (safari.sinBalls()) {
-            <p class="nota">Te quedaste sin balls: aún puedes lanzar rocas, cebos o huir.</p>
           }
         </div>
+
+        <div class="botones">
+          <button
+            type="button"
+            class="btn btn-primario btn-grande"
+            [disabled]="!safari.puedeActuar() || safari.inventario()[safari.ballSeleccionada()] === 0"
+            (click)="lanzar()"
+          >
+            Lanzar {{ safari.ballActual().nombre }}
+          </button>
+          <button type="button" class="btn btn-secundario" [disabled]="!safari.puedeActuar()" (click)="safari.lanzarRoca()">
+            Lanzar roca
+          </button>
+          <button type="button" class="btn btn-secundario" [disabled]="!safari.puedeActuar()" (click)="safari.lanzarCebo()">
+            Lanzar cebo
+          </button>
+          <button type="button" class="btn btn-fantasma" [disabled]="!safari.puedeActuar()" (click)="safari.huir()">
+            Huir
+          </button>
+        </div>
+        @if (safari.sinBalls()) {
+          <p class="nota">Se acabaron las balls. Todavía puedes lanzar rocas, cebos o huir.</p>
+        }
       } @else if (!safari.animando()) {
-        <div class="resultado" [attr.data-resultado]="e.resultado">
-          <p class="titulo-resultado">{{ tituloResultado() }}</p>
+        <div class="resultado" [class.capturado]="e.resultado === 'capturado'">
+          <p class="titulo-resultado">{{ textoResultado() }}</p>
           @if (e.resultado === 'capturado') {
-            <p>Se guardó en tu colección después de {{ e.intentos }} {{ e.intentos === 1 ? 'lanzamiento' : 'lanzamientos' }}.</p>
+            <p>Se guardó en tu colección. Lanzamientos: {{ e.intentos }}</p>
           }
           <div class="botones">
             @if (!safari.sinBalls()) {
-              <button type="button" class="btn btn-primario" (click)="seguirExplorando()">👣 Seguir explorando</button>
+              <button type="button" class="btn btn-primario" (click)="seguirBuscando()">Buscar otro</button>
             } @else {
-              <button type="button" class="btn btn-primario" (click)="safari.continuar()">Ver resumen de la expedición</button>
+              <button type="button" class="btn btn-primario" (click)="safari.continuar()">Continuar</button>
             }
             @if (e.resultado === 'capturado') {
-              <a routerLink="/coleccion" class="btn btn-fantasma">Ver mi colección</a>
+              <a routerLink="/coleccion" class="btn btn-fantasma">Ver colección</a>
             }
           </div>
         </div>
       }
     } @else if (safari.expedicionTerminada()) {
       <div class="vacio">
-        <span class="icono-grande" aria-hidden="true">🎒</span>
-        <p><strong>¡Te quedaste sin balls!</strong></p>
+        <p><strong>Se acabaron las balls.</strong></p>
         <p>
-          Expedición terminada: atrapaste {{ safari.estadisticas().capturas }} de
-          {{ safari.estadisticas().encuentros }} Pokémon encontrados.
+          Atrapaste {{ safari.estadisticas().capturas }} de los {{ safari.estadisticas().encuentros }} Pokémon que
+          encontraste.
         </p>
         <div class="botones">
-          <button type="button" class="btn btn-primario" (click)="safari.nuevaExpedicion()">🔄 Nueva expedición</button>
-          <a routerLink="/coleccion" class="btn btn-fantasma">Ver mi colección</a>
+          <button type="button" class="btn btn-primario" (click)="safari.nuevaExpedicion()">Empezar de nuevo</button>
+          <a routerLink="/coleccion" class="btn btn-fantasma">Ver colección</a>
         </div>
       </div>
     } @else {
       <div class="vacio">
-        <span class="icono-grande" aria-hidden="true">🌿</span>
-        <p><strong>La hierba alta se mueve…</strong></p>
-        <p>Camina por este hábitat para encontrar un Pokémon salvaje.</p>
-        <button type="button" class="btn btn-primario btn-grande" (click)="explorar()">👣 Caminar por la hierba</button>
+        <p>Busca un Pokémon salvaje en este hábitat.</p>
+        <button type="button" class="btn btn-primario btn-grande" (click)="buscar()">Buscar Pokémon</button>
       </div>
     }
   </div>
 
   @if (safari.bitacora().length > 0) {
-    <details class="bitacora" open>
-      <summary>Bitácora de la expedición</summary>
-      <ol>
+    <div class="historial">
+      <h4>Historial</h4>
+      <ul>
         @for (entrada of safari.bitacora(); track entrada.id) {
-          <li [class]="'entrada-' + entrada.tipo">{{ entrada.texto }}</li>
+          <li [class]="entrada.tipo">{{ entrada.texto }}</li>
         }
-      </ol>
-    </details>
+      </ul>
+    </div>
   }
 </section>

@@ -1,81 +1,78 @@
 <section class="contenedor pagina">
-  <header class="encabezado cabecera">
+  <div class="cabecera">
     <div>
-      <p class="eyebrow">Tus capturas</p>
       <h1>Mi colección</h1>
-      <p class="subtitulo">Los Pokémon que atrapes en la Zona Safari se guardan en este navegador.</p>
+      <p class="subtitulo">Aquí están los Pokémon que atrapaste. Se guardan en el navegador.</p>
     </div>
-    <dl class="resumen">
+    <div class="resumen">
       <div>
-        <dt>Capturas</dt>
-        <dd>{{ coleccion.total() }}</dd>
+        <span>Capturas</span>
+        <strong>{{ coleccion.total() }}</strong>
       </div>
       <div>
-        <dt>Especies</dt>
-        <dd>{{ coleccion.especiesUnicas() }}</dd>
+        <span>Especies</span>
+        <strong>{{ coleccion.especiesUnicas() }}</strong>
       </div>
       <div>
-        <dt>Shiny</dt>
-        <dd>{{ coleccion.shinies() }}</dd>
+        <span>Shiny</span>
+        <strong>{{ coleccion.shinies() }}</strong>
       </div>
-    </dl>
-  </header>
+    </div>
+  </div>
 
   @if (coleccion.total() === 0) {
     <div class="vacio tarjeta">
-      <span class="icono-grande" aria-hidden="true">🌾</span>
-      <p><strong>Aún no has capturado ningún Pokémon.</strong></p>
-      <p>Ve a explorar un hábitat y usa tus balls para empezar tu colección.</p>
-      <a routerLink="/explorar" class="btn btn-primario">👣 Ir a explorar</a>
+      <p><strong>Todavía no has atrapado ningún Pokémon.</strong></p>
+      <p>Ve a Explorar y usa tus balls para empezar tu colección.</p>
+      <a routerLink="/explorar" class="btn btn-primario">Ir a explorar</a>
     </div>
   } @else {
     <div class="filtros tarjeta">
       <label>
-        <span>Buscar</span>
+        Buscar
         <input
           #campoTexto
           class="campo"
-          type="search"
+          type="text"
           placeholder="Nombre o número"
-          [value]="filtroTexto()"
-          (input)="filtroTexto.set(campoTexto.value)"
+          [value]="texto()"
+          (input)="texto.set(campoTexto.value)"
         />
       </label>
       <label>
-        <span>Hábitat</span>
-        <select #campoHabitat class="campo" (change)="filtroHabitat.set(campoHabitat.value)">
-          <option value="todos" [selected]="filtroHabitat() === 'todos'">Todos</option>
-          @for (habitat of habitats(); track habitat.clave) {
-            <option [value]="habitat.clave" [selected]="filtroHabitat() === habitat.clave">{{ habitat.nombre }}</option>
+        Hábitat
+        <select #campoHabitat class="campo" (change)="habitat.set(campoHabitat.value)">
+          <option value="todos" [selected]="habitat() === 'todos'">Todos</option>
+          @for (h of habitats(); track h) {
+            <option [value]="h" [selected]="habitat() === h">{{ nombreHabitat(h) }}</option>
           }
         </select>
       </label>
       <label>
-        <span>Ordenar por</span>
-        <select #campoOrden class="campo" (change)="cambiarOrden(campoOrden.value)">
-          <option value="recientes" [selected]="orden() === 'recientes'">Más recientes</option>
-          <option value="numero" [selected]="orden() === 'numero'">Número de Pokédex</option>
-          <option value="nombre" [selected]="orden() === 'nombre'">Nombre</option>
+        Ordenar por
+        <select #campoOrden class="campo" (change)="orden.set(campoOrden.value)">
+          <option value="recientes">Más recientes</option>
+          <option value="numero">Número</option>
+          <option value="nombre">Nombre</option>
         </select>
       </label>
       <button
         type="button"
         class="btn"
-        [class.btn-peligro]="confirmarVaciar()"
-        [class.btn-fantasma]="!confirmarVaciar()"
-        (click)="vaciar()"
-        (blur)="confirmarVaciar.set(false)"
+        [class.btn-peligro]="confirmarBorrar()"
+        [class.btn-fantasma]="!confirmarBorrar()"
+        (click)="borrarTodo()"
+        (blur)="confirmarBorrar.set(false)"
       >
-        {{ confirmarVaciar() ? '¿Seguro? Se liberarán todos' : '🗑️ Vaciar colección' }}
+        {{ confirmarBorrar() ? '¿Seguro? Haz clic otra vez' : 'Borrar todo' }}
       </button>
     </div>
 
-    <p class="conteo">Mostrando {{ visibles().length }} de {{ coleccion.total() }} capturas</p>
+    <p class="conteo">Mostrando {{ visibles().length }} de {{ coleccion.total() }}</p>
 
     @if (visibles().length === 0) {
       <div class="vacio tarjeta">
-        <span class="icono-grande" aria-hidden="true">🔍</span>
-        <p>Ningún Pokémon de tu colección coincide con los filtros.</p>
+        <p>No hay Pokémon que coincidan con la búsqueda.</p>
         <button type="button" class="btn btn-secundario" (click)="limpiarFiltros()">Limpiar filtros</button>
       </div>
     } @else {
@@ -91,13 +88,16 @@
                 loading="lazy"
               />
               <span class="numero">{{ numero(captura.ficha.id) }}</span>
-              <span class="nombre">{{ captura.ficha.nombre }}{{ captura.shiny ? ' ✨' : '' }}</span>
+              <span class="nombre">{{ captura.ficha.nombre }}</span>
+              @if (captura.shiny) {
+                <span class="chip chip-dorado">Shiny</span>
+              }
               <span class="tipos">
                 @for (tipo of captura.ficha.tipos; track tipo) {
                   <app-tipo-badge [tipo]="tipo" />
                 }
               </span>
-              <span class="meta">{{ etiquetaHabitat(captura.habitat) }} · {{ fecha(captura.fecha) }}</span>
+              <span class="meta">{{ nombreHabitat(captura.habitat) }} - {{ fecha(captura.fecha) }}</span>
             </button>
           </li>
         }
@@ -108,44 +108,33 @@
 
 @if (seleccionada(); as captura) {
   <div class="fondo-modal" (click)="cerrar()">
-    <div
-      class="modal"
-      role="dialog"
-      aria-modal="true"
-      [attr.aria-label]="'Detalle de ' + captura.ficha.nombre"
-      (click)="$event.stopPropagation()"
-    >
-      <button type="button" class="cerrar" aria-label="Cerrar" (click)="cerrar()">✕</button>
+    <div class="modal" (click)="$event.stopPropagation()">
+      <button type="button" class="cerrar" (click)="cerrar()">X</button>
       <app-ficha-detalle [ficha]="captura.ficha" [shiny]="captura.shiny" />
 
       @let ballUsada = ball(captura.ball);
-      <dl class="datos-captura">
+      <div class="datos-captura">
         <div>
-          <dt>Capturado con</dt>
-          <dd>
-            @if (ballUsada.sprite) {
-              <img [src]="ballUsada.sprite" alt="" width="24" height="24" />
-            }
-            {{ ballUsada.nombre }}
-          </dd>
+          <span>Atrapado con</span>
+          <strong><img [src]="ballUsada.sprite" alt="" width="24" height="24" /> {{ ballUsada.nombre }}</strong>
         </div>
         <div>
-          <dt>Lanzamientos</dt>
-          <dd>{{ captura.intentos }}</dd>
+          <span>Lanzamientos</span>
+          <strong>{{ captura.intentos }}</strong>
         </div>
         <div>
-          <dt>Probabilidad del lanzamiento</dt>
-          <dd>{{ captura.probabilidad | porcentaje }}</dd>
+          <span>Probabilidad</span>
+          <strong>{{ captura.probabilidad | porcentaje }}</strong>
         </div>
         <div>
-          <dt>Hábitat</dt>
-          <dd>{{ etiquetaHabitat(captura.habitat) }}</dd>
+          <span>Hábitat</span>
+          <strong>{{ nombreHabitat(captura.habitat) }}</strong>
         </div>
         <div>
-          <dt>Fecha</dt>
-          <dd>{{ fecha(captura.fecha, true) }}</dd>
+          <span>Fecha</span>
+          <strong>{{ fecha(captura.fecha, true) }}</strong>
         </div>
-      </dl>
+      </div>
 
       <div class="acciones-modal">
         <button
@@ -155,7 +144,7 @@
           [class.btn-fantasma]="!confirmarLiberar()"
           (click)="liberar(captura)"
         >
-          {{ confirmarLiberar() ? 'Confirmar: liberar a ' + captura.ficha.nombre : '🍃 Liberar' }}
+          {{ confirmarLiberar() ? '¿Seguro? Haz clic otra vez' : 'Liberar' }}
         </button>
         <button type="button" class="btn btn-secundario" (click)="cerrar()">Cerrar</button>
       </div>
