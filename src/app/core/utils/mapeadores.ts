@@ -72,16 +72,29 @@ export function aFicha(especie: EspecieApi, pokemon: PokemonApi): FichaPokemon {
 /** /item/{nombre} → BallInfo (con el bono definido en REGLAS_BALLS). */
 export function aBall(id: IdBall, api: ItemApi): BallInfo {
   const descripcion = ultimoEnEspanol(api.flavor_text_entries);
-  const precios = api.prices ?? [];
   return {
     id,
     nombre: nombreEnEspanol(api.names, REGLAS_BALLS[id].respaldo),
     descripcion: descripcion ? limpiarTexto(descripcion.text) : '',
     sprite: api.sprites.default ?? '',
-    // Precio de compra en la versión más reciente registrada (0 si PokéAPI no lo tiene).
-    costo: precios.at(-1)?.purchase_price ?? api.cost ?? 0,
+    costo: precioDeCompra(api),
     bono: REGLAS_BALLS[id].bono,
   };
+}
+
+/** Versiones principales más recientes cuyo precio se prefiere mostrar. */
+const VERSIONES_PRECIO = ['scarlet-violet', 'sword-shield'];
+
+/** Precio de compra de un objeto según "prices" (0 si PokéAPI no lo registra). */
+function precioDeCompra(api: ItemApi): number {
+  const precios = (api.prices ?? []).filter((p) => p.purchase_price > 0);
+  for (const version of VERSIONES_PRECIO) {
+    const precio = precios.find((p) => p.version_group.name === version);
+    if (precio) {
+      return precio.purchase_price;
+    }
+  }
+  return precios.at(-1)?.purchase_price ?? api.cost ?? 0;
 }
 
 /** Datos mínimos de una ball si /item no responde (la lógica sigue funcionando). */

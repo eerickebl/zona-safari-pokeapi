@@ -4,6 +4,8 @@ Aplicación web interactiva desarrollada con **Angular 22** que consume **PokéA
 
 > **Aplicación desplegada:** https://zona-safari-pokeapi.vercel.app
 >
+> **Repositorio:** https://github.com/eerickebl/zona-safari-pokeapi
+>
 > **Práctica 02** · Programación y Plataformas Web · Universidad Politécnica Salesiana (Cuenca)
 > **Autor:** Erick Bermeo · **Docente:** Ing. Gabriel A. León Paredes, PhD.
 
@@ -35,7 +37,7 @@ Base: `https://pokeapi.co/api/v2`
 | `GET /pokemon-habitat` y `GET /pokemon-habitat/{nombre}` | `/pokemon-habitat/forest` | Lista de hábitats y especies que viven en cada uno. | Selector de hábitats, Pokémon aleatorio de cada encuentro, progreso por hábitat, total de la Pokédex Safari. |
 | `GET /pokemon-species/{id o nombre}` | `/pokemon-species/25` | `capture_rate`, nombre, categoría y descripción en español, `is_legendary`, `is_mythical`, `habitat`, `generation`, `varieties`. | Fórmula de captura, regla de huida, ficha del Pokémon, búsqueda de la Guía (404 → "Pokémon no encontrado"). |
 | `GET /pokemon/{id}` | `/pokemon/25` | Imágenes normales, shiny, animadas y oficiales, tipos, estadísticas base (PS, velocidad…), altura, peso y grito (`cries`). | Escena del encuentro, ficha, colección y probabilidad de huida (velocidad). |
-| `GET /item/{nombre}` | `/item/ultra-ball` | Nombre en español, imagen, descripción y precio de `safari-ball`, `poke-ball`, `great-ball` y `ultra-ball`. | Mochila, selector de ball, tabla de probabilidades y detalle de cada captura. |
+| `GET /item/{nombre}` | `/item/ultra-ball` | Nombre en español, imagen, descripción y precio de compra (`prices`) de `safari-ball`, `poke-ball`, `great-ball` y `ultra-ball`. | Mochila, selector de ball, tabla de probabilidades y detalle de cada captura. |
 
 Todas las peticiones pasan por `PokeApiService`, que guarda en caché las respuestas y las elimina si fallan para poder reintentar.
 
@@ -94,7 +96,7 @@ src/app
 Requisitos: **Node.js** 22.22.3+ o 24.15+ y **npm**.
 
 ```bash
-git clone https://github.com/USUARIO/zona-safari-pokeapi.git
+git clone https://github.com/eerickebl/zona-safari-pokeapi.git
 cd zona-safari-pokeapi
 npm install
 npm start
