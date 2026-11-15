@@ -1,0 +1,65 @@
+<section class="mochila tarjeta" aria-labelledby="titulo-mochila">
+  <header class="cabecera">
+    <h2 id="titulo-mochila">🎒 Tu mochila</h2>
+    <span class="chip chip-verde">{{ total() }} balls</span>
+  </header>
+
+  @if (error()) {
+    <p class="aviso">
+      No se pudieron cargar los datos de las balls desde /item; se usan nombres de respaldo.
+      <button type="button" class="enlace" (click)="reintentar.emit()">Reintentar</button>
+    </p>
+  }
+
+  <ul class="balls">
+    @for (ball of balls(); track ball.id) {
+      @let cantidad = inventario()[ball.id];
+      <li [class.agotada]="cantidad === 0">
+        @if (ball.sprite) {
+          <img [src]="ball.sprite" [alt]="ball.nombre" width="36" height="36" />
+        } @else {
+          <span class="sin-imagen" aria-hidden="true">●</span>
+        }
+        <div class="info">
+          <p class="nombre">{{ ball.nombre }} <span class="bono">bono ×{{ ball.bono }}</span></p>
+          @if (ball.descripcion) {
+            <p class="descripcion">{{ ball.descripcion }}</p>
+          }
+          <p class="precio">{{ textoPrecio(ball) }}</p>
+        </div>
+        <span class="cantidad" [attr.aria-label]="cantidad + ' unidades'">×{{ cantidad }}</span>
+      </li>
+    }
+  </ul>
+
+  <dl class="estadisticas">
+    <div>
+      <dt>Encuentros</dt>
+      <dd>{{ estadisticas().encuentros }}</dd>
+    </div>
+    <div>
+      <dt>Capturas</dt>
+      <dd>{{ estadisticas().capturas }}</dd>
+    </div>
+    <div>
+      <dt>Huidas</dt>
+      <dd>{{ estadisticas().huidas }}</dd>
+    </div>
+    <div>
+      <dt>Efectividad</dt>
+      <dd>{{ efectividad() | porcentaje }}</dd>
+    </div>
+  </dl>
+
+  <button
+    type="button"
+    class="btn"
+    [class.btn-peligro]="confirmando()"
+    [class.btn-secundario]="!confirmando()"
+    [disabled]="bloqueado()"
+    (click)="pedirNuevaExpedicion()"
+    (blur)="confirmando.set(false)"
+  >
+    {{ confirmando() ? '¿Seguro? Se reinicia la mochila' : '🔄 Nueva expedición' }}
+  </button>
+</section>

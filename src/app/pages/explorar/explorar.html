@@ -1,0 +1,65 @@
+<section class="contenedor pagina">
+  <header class="encabezado">
+    <p class="eyebrow">Expedición</p>
+    <h1>Explora la Zona Safari</h1>
+    <p class="subtitulo">
+      Elige un hábitat, camina por la hierba y usa tu mochila con estrategia: te quedan
+      <strong>{{ safari.totalBalls() }}</strong> balls.
+    </p>
+  </header>
+
+  <div class="disposicion">
+    <aside class="columna-habitats" aria-labelledby="titulo-habitats">
+      <h2 id="titulo-habitats" class="titulo-seccion">1. Elige un hábitat</h2>
+      @if (cargando()) {
+        <app-cargando mensaje="Cargando hábitats desde PokéAPI…" />
+      } @else if (error(); as mensaje) {
+        <app-mensaje-error
+          titulo="No se pudieron cargar los hábitats"
+          [mensaje]="mensaje"
+          (reintentar)="cargarHabitats()"
+        />
+      } @else {
+        <app-selector-habitat
+          [habitats]="habitats()"
+          [seleccionado]="safari.habitatSeleccionado()"
+          [capturados]="coleccion.idsCapturados()"
+          [bloqueado]="bloqueado()"
+          (elegir)="elegirHabitat($event)"
+        />
+      }
+    </aside>
+
+    <div class="columna-juego" #panel>
+      <h2 class="titulo-seccion">2. Explora y captura</h2>
+
+      @if (habitatInexistente(); as nombre) {
+        <app-mensaje-error
+          icono="🧭"
+          titulo="Hábitat no encontrado"
+          [mensaje]="'PokéAPI no tiene un hábitat llamado «' + nombre + '». Elige uno de la lista.'"
+          [conBoton]="false"
+        />
+      }
+
+      @if (habitatActual(); as habitat) {
+        <app-panel-encuentro [habitat]="habitat" />
+      } @else if (!cargando() && !error() && !habitatInexistente()) {
+        <div class="vacio tarjeta">
+          <span class="icono-grande" aria-hidden="true">🗺️</span>
+          <p><strong>Selecciona un hábitat</strong> para empezar a buscar Pokémon salvajes.</p>
+        </div>
+      }
+
+      <app-mochila
+        [balls]="safari.balls()"
+        [inventario]="safari.inventario()"
+        [estadisticas]="safari.estadisticas()"
+        [error]="safari.errorBalls()"
+        [bloqueado]="safari.animando()"
+        (reintentar)="safari.cargarBalls()"
+        (nuevaExpedicion)="safari.nuevaExpedicion()"
+      />
+    </div>
+  </div>
+</section>

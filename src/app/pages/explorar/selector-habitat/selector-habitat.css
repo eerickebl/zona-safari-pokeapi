@@ -1,0 +1,121 @@
+.habitats {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(17rem, 1fr));
+  gap: 0.6rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.habitat {
+  --color-habitat: var(--verde);
+  position: relative;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 0.8rem;
+  width: 100%;
+  padding: 0.75rem 0.85rem;
+  border: 2px solid var(--borde);
+  border-left: 6px solid var(--color-habitat);
+  border-radius: var(--radio-sm);
+  background: var(--crema);
+  color: var(--texto);
+  text-align: left;
+  cursor: pointer;
+  transition: transform 0.15s, border-color 0.2s, box-shadow 0.2s;
+}
+
+.habitat:hover:not(:disabled) {
+  transform: translateX(3px);
+  box-shadow: var(--sombra-sm);
+}
+
+.habitat.activo {
+  border-color: var(--color-habitat);
+  background: #fff;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-habitat) 25%, transparent);
+}
+
+.habitat:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.icono {
+  display: grid;
+  place-items: center;
+  width: 2.6rem;
+  height: 2.6rem;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--color-habitat) 18%, white);
+  font-size: 1.4rem;
+}
+
+.texto {
+  display: grid;
+  gap: 0.15rem;
+  min-width: 0;
+}
+
+.nombre {
+  font-family: var(--fuente-titulos);
+  font-size: 1.08rem;
+  font-weight: 600;
+}
+
+.descripcion {
+  color: var(--texto-suave);
+  font-size: 0.82rem;
+  line-height: 1.35;
+}
+
+.progreso {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.25rem;
+}
+
+.barra {
+  flex: 1;
+  height: 0.4rem;
+  border-radius: 999px;
+  background: var(--arena-2);
+  overflow: hidden;
+}
+
+.barra span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--color-habitat);
+}
+
+.cifra {
+  font-size: 0.75rem;
+  font-weight: 800;
+  color: var(--texto-suave);
+}
+
+.muestras {
+  display: flex;
+}
+
+.muestras img {
+  width: 2.6rem;
+  height: 2.6rem;
+  margin-left: -0.7rem;
+  image-rendering: pixelated;
+}
+
+/* En celulares las tarjetas se compactan para llegar antes al encuentro. */
+@media (max-width: 480px) {
+  .habitat {
+    padding: 0.55rem 0.7rem;
+  }
+
+  .descripcion {
+    display: none;
+  }
+}

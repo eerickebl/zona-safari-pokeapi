@@ -1,0 +1,12 @@
+<div class="aviso" role="alert">
+  <span class="icono" aria-hidden="true">{{ icono() }}</span>
+  <div class="texto">
+    <p class="titulo">{{ titulo() }}</p>
+    <p class="mensaje">{{ mensaje() }}</p>
+  </div>
+  @if (conBoton()) {
+    <button type="button" class="btn btn-secundario" (click)="reintentar.emit()">
+      {{ textoBoton() }}
+    </button>
+  }
+</div>

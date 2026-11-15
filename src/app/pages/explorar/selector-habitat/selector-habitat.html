@@ -1,0 +1,37 @@
+<ul class="habitats">
+  @for (habitat of habitats(); track habitat.nombre) {
+    @let capturadas = progresos().get(habitat.nombre) ?? 0;
+    @let activo = habitat.nombre === seleccionado();
+    <li>
+      <button
+        type="button"
+        class="habitat"
+        [class.activo]="activo"
+        [style.--color-habitat]="habitat.color"
+        [attr.aria-pressed]="activo"
+        [disabled]="bloqueado() && !activo"
+        (click)="elegir.emit(habitat.nombre)"
+      >
+        <span class="icono" aria-hidden="true">{{ habitat.icono }}</span>
+        <span class="texto">
+          <span class="nombre">{{ habitat.etiqueta }}</span>
+          <span class="descripcion">{{ habitat.descripcion }}</span>
+          <span class="progreso">
+            <span class="barra">
+              <span [style.width.%]="porcentaje(capturadas, habitat.especies.length)"></span>
+            </span>
+            <span class="cifra">{{ capturadas }}/{{ habitat.especies.length }}</span>
+          </span>
+        </span>
+        <span class="muestras" aria-hidden="true">
+          @for (especie of habitat.especies.slice(0, 2); track especie.id) {
+            <img [src]="sprite(especie.id)" alt="" width="48" height="48" loading="lazy" />
+          }
+        </span>
+      </button>
+    </li>
+  }
+</ul>
+@if (bloqueado()) {
+  <p class="nota">Termina el encuentro actual para cambiar de hábitat.</p>
+}

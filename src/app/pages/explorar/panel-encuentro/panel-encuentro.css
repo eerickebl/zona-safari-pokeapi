@@ -1,0 +1,379 @@
+.panel {
+  --color-habitat: var(--verde);
+  display: grid;
+  gap: 1.2rem;
+  border-top: 6px solid var(--color-habitat);
+}
+
+.panel-cabecera {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+}
+
+.panel-cabecera .icono {
+  display: grid;
+  place-items: center;
+  width: 3rem;
+  height: 3rem;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--color-habitat) 18%, white);
+  font-size: 1.6rem;
+}
+
+.panel-cabecera h3 {
+  margin: 0;
+  font-size: 1.4rem;
+}
+
+.panel-cabecera p {
+  margin: 0.1rem 0 0;
+  color: var(--texto-suave);
+  font-size: 0.9rem;
+}
+
+.escena {
+  min-height: 16rem;
+}
+
+.encuentro {
+  display: grid;
+  gap: 1.2rem;
+  align-items: center;
+}
+
+.arena {
+  position: relative;
+  display: grid;
+  place-items: end center;
+  min-height: 15rem;
+  padding: 1.2rem 1rem 2.6rem;
+  border-radius: var(--radio);
+  overflow: hidden;
+  /* Cielo, horizonte y una plataforma de pasto como en las batallas de los juegos. */
+  background:
+    radial-gradient(ellipse 44% 13% at 50% 85%, color-mix(in srgb, var(--color-habitat) 48%, white) 0 96%, transparent 100%),
+    linear-gradient(180deg, #dcefff 0%, #f4f9ee 58%, color-mix(in srgb, var(--color-habitat) 26%, white) 58% 100%);
+}
+
+.sombra {
+  position: absolute;
+  bottom: 2.1rem;
+  left: 50%;
+  translate: -50% 0;
+  width: 8rem;
+  height: 1.2rem;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.16);
+}
+
+.pokemon {
+  position: relative;
+  image-rendering: pixelated;
+  transition: opacity 0.3s, transform 0.3s;
+  animation: aparecer 0.45s ease-out;
+}
+
+/* Los GIF animados de PokéAPI son pequeños: se amplían manteniendo su tamaño relativo. */
+.pokemon.animado {
+  zoom: 1.8;
+  max-height: 7rem;
+  max-width: 9rem;
+}
+
+.pokemon.pixel {
+  width: 10rem;
+  height: auto;
+}
+
+.pokemon.oculto {
+  opacity: 0;
+  transform: scale(0.3);
+}
+
+[data-resultado='huyo'] .pokemon,
+[data-resultado='escapaste'] .pokemon {
+  opacity: 0.25;
+  filter: grayscale(1);
+}
+
+[data-resultado='capturado'] .arena {
+  box-shadow: inset 0 0 0 4px var(--exito);
+}
+
+.brillo {
+  position: absolute;
+  top: 0.8rem;
+  left: 0.8rem;
+}
+
+.ball-en-juego {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: 0.3rem;
+  font-weight: 800;
+  color: var(--verde-oscuro);
+}
+
+.ball-en-juego p {
+  margin: 0;
+  padding: 0.2rem 0.6rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.85);
+}
+
+.ball-en-juego img,
+.ball-respaldo {
+  width: 4rem;
+  height: 4rem;
+  image-rendering: pixelated;
+  font-size: 3rem;
+  line-height: 4rem;
+  text-align: center;
+  animation: caer 0.5s ease-in;
+}
+
+/* Se alternan dos animaciones iguales para que se reinicien en cada sacudida. */
+.ball-en-juego[data-sacudida='1'] > *:first-child,
+.ball-en-juego[data-sacudida='3'] > *:first-child {
+  animation: sacudir 0.7s ease-in-out;
+}
+
+.ball-en-juego[data-sacudida='2'] > *:first-child {
+  animation: sacudir-b 0.7s ease-in-out;
+}
+
+.numero {
+  margin: 0;
+  color: var(--texto-suave);
+  font-weight: 800;
+}
+
+.datos h4 {
+  margin: 0.1rem 0 0.5rem;
+  font-family: var(--fuente-titulos);
+  font-size: 1.9rem;
+  font-weight: 600;
+  color: var(--verde-oscuro);
+}
+
+.etiquetas {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.animo {
+  display: inline-block;
+  margin: 0.8rem 0 0.4rem;
+  padding: 0.25rem 0.7rem;
+  border-radius: 999px;
+  background: var(--arena);
+  font-weight: 800;
+}
+
+.animo[data-animo='enojado'] {
+  background: #ffe1d8;
+  color: #9a2f17;
+}
+
+.animo[data-animo='comiendo'] {
+  background: #e3f4d8;
+  color: #2d6a1f;
+}
+
+.detalle {
+  margin: 0 0 0.6rem;
+  color: var(--texto-suave);
+  font-size: 0.92rem;
+}
+
+.medidores {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+  gap: 0.8rem;
+}
+
+.medidor {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 0.35rem;
+  padding: 0.7rem 0.9rem;
+  border-radius: var(--radio-sm);
+  background: var(--arena);
+}
+
+.medidor .etiqueta {
+  color: var(--texto-suave);
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.medidor .barra {
+  grid-column: 1 / -1;
+  height: 0.55rem;
+  border-radius: 999px;
+  background: var(--arena-2);
+  overflow: hidden;
+}
+
+.medidor .barra span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  transition: width 0.4s ease;
+}
+
+.exito {
+  background: var(--exito);
+}
+
+.peligro {
+  background: var(--peligro);
+}
+
+.acciones,
+.resultado {
+  display: grid;
+  gap: 0.9rem;
+}
+
+.selector-balls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.opcion-ball {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.35rem 0.7rem 0.35rem 0.45rem;
+  border: 2px solid var(--borde);
+  border-radius: 999px;
+  background: #fff;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.opcion-ball img {
+  image-rendering: pixelated;
+}
+
+.opcion-ball.activa {
+  border-color: var(--verde);
+  background: var(--verde-claro);
+}
+
+.opcion-ball:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.opcion-ball .cantidad {
+  min-width: 1.6rem;
+  padding: 0 0.35rem;
+  border-radius: 999px;
+  background: var(--verde-oscuro);
+  color: #fff;
+  font-size: 0.78rem;
+  text-align: center;
+}
+
+.botones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+}
+
+.resultado {
+  padding: 1rem 1.2rem;
+  border-radius: var(--radio-sm);
+  background: var(--arena);
+}
+
+.resultado[data-resultado='capturado'] {
+  background: #e3f4e6;
+}
+
+.resultado p {
+  margin: 0;
+}
+
+.titulo-resultado {
+  font-family: var(--fuente-titulos);
+  font-size: 1.4rem;
+  font-weight: 600;
+  color: var(--verde-oscuro);
+}
+
+.bitacora summary {
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.bitacora ol {
+  display: grid;
+  gap: 0.3rem;
+  max-height: 11rem;
+  margin: 0.6rem 0 0;
+  padding: 0;
+  overflow-y: auto;
+  list-style: none;
+  font-size: 0.88rem;
+}
+
+.bitacora li {
+  padding: 0.35rem 0.6rem;
+  border-left: 4px solid var(--borde);
+  border-radius: 6px;
+  background: #fff;
+}
+
+.bitacora li.entrada-exito {
+  border-left-color: var(--exito);
+}
+
+.bitacora li.entrada-fallo {
+  border-left-color: var(--peligro);
+}
+
+@keyframes aparecer {
+  from {
+    opacity: 0;
+    transform: scale(0.6) translateY(1rem);
+  }
+}
+
+@keyframes caer {
+  from {
+    transform: translateY(-6rem) rotate(-180deg);
+  }
+}
+
+@keyframes sacudir {
+  25% {
+    transform: rotate(-22deg);
+  }
+  75% {
+    transform: rotate(22deg);
+  }
+}
+
+@keyframes sacudir-b {
+  25% {
+    transform: rotate(-22deg);
+  }
+  75% {
+    transform: rotate(22deg);
+  }
+}
+
+@media (min-width: 720px) {
+  .encuentro {
+    grid-template-columns: minmax(15rem, 1fr) 1.1fr;
+  }
+}

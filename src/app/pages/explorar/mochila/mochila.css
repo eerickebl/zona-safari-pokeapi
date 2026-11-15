@@ -1,0 +1,134 @@
+.mochila {
+  display: grid;
+  gap: 1rem;
+}
+
+.cabecera {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.cabecera h2 {
+  margin: 0;
+  font-size: 1.25rem;
+}
+
+.aviso {
+  margin: 0;
+  padding: 0.6rem 0.8rem;
+  border-radius: var(--radio-sm);
+  background: #fff4ef;
+  color: #7d3d29;
+  font-size: 0.88rem;
+}
+
+.enlace {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--verde);
+  font-weight: 800;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.balls {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+  gap: 0.6rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.balls li {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 0.7rem;
+  padding: 0.6rem 0.8rem;
+  border-radius: var(--radio-sm);
+  background: #fff;
+  border: 1px solid var(--borde);
+}
+
+.balls li.agotada {
+  opacity: 0.5;
+}
+
+.balls img {
+  image-rendering: pixelated;
+}
+
+.sin-imagen {
+  font-size: 1.6rem;
+  color: var(--texto-suave);
+}
+
+.info p {
+  margin: 0;
+}
+
+.nombre {
+  font-weight: 800;
+}
+
+.bono {
+  margin-left: 0.25rem;
+  color: var(--verde);
+  font-size: 0.78rem;
+}
+
+.descripcion,
+.precio {
+  color: var(--texto-suave);
+  font-size: 0.78rem;
+  line-height: 1.35;
+}
+
+.cantidad {
+  font-family: var(--fuente-titulos);
+  font-size: 1.35rem;
+  font-weight: 600;
+  color: var(--verde-oscuro);
+}
+
+.estadisticas {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.5rem;
+  margin: 0;
+}
+
+.estadisticas div {
+  padding: 0.5rem;
+  border-radius: var(--radio-sm);
+  background: var(--arena);
+  text-align: center;
+}
+
+.estadisticas dt {
+  font-size: 0.7rem;
+  font-weight: 800;
+  color: var(--texto-suave);
+  text-transform: uppercase;
+}
+
+.estadisticas dd {
+  margin: 0;
+  font-family: var(--fuente-titulos);
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.mochila > .btn {
+  justify-self: start;
+}
+
+@media (max-width: 520px) {
+  .estadisticas {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}

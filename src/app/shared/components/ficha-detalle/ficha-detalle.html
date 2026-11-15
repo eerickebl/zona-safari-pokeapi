@@ -1,0 +1,61 @@
+<article class="ficha">
+  <div class="imagen" [class.shiny]="shiny()">
+    <img [src]="imagen()" [alt]="'Ilustración de ' + ficha().nombre" width="240" height="240" />
+    @if (shiny()) {
+      <span class="chip chip-dorado etiqueta-shiny">✨ Shiny</span>
+    }
+  </div>
+
+  <div class="info">
+    <p class="numero">{{ numero() }} · {{ ficha().categoria }}</p>
+    <h2>{{ ficha().nombre }}</h2>
+    <div class="etiquetas">
+      @for (tipo of ficha().tipos; track tipo) {
+        <app-tipo-badge [tipo]="tipo" />
+      }
+      @if (ficha().legendario) {
+        <span class="chip chip-dorado">Legendario</span>
+      }
+      @if (ficha().mitico) {
+        <span class="chip chip-morado">Mítico</span>
+      }
+    </div>
+    <p class="descripcion">{{ ficha().descripcion }}</p>
+
+    <dl class="datos">
+      <div>
+        <dt>Altura</dt>
+        <dd>{{ altura() }}</dd>
+      </div>
+      <div>
+        <dt>Peso</dt>
+        <dd>{{ peso() }}</dd>
+      </div>
+      <div>
+        <dt>Generación</dt>
+        <dd>{{ generacion() }}</dd>
+      </div>
+      <div>
+        <dt>Hábitat</dt>
+        <dd>{{ habitat() }}</dd>
+      </div>
+      <div>
+        <dt>Tasa de captura</dt>
+        <dd>{{ ficha().tasaCaptura }} / 255</dd>
+      </div>
+    </dl>
+
+    @if (ficha().grito) {
+      <button type="button" class="btn btn-fantasma btn-pequeno" (click)="reproducirGrito()">
+        🔊 Escuchar su grito
+      </button>
+    }
+  </div>
+
+  <div class="stats">
+    <h3>Estadísticas base <span>Total: {{ totalStats() }}</span></h3>
+    @for (stat of ficha().stats; track stat.clave) {
+      <app-barra-stat [nombre]="stat.nombre" [valor]="stat.valor" />
+    }
+  </div>
+</article>

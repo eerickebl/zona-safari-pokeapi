@@ -1,0 +1,15 @@
+:host {
+  display: inline-flex;
+}
+
+.tipo {
+  display: inline-block;
+  padding: 0.18rem 0.7rem;
+  border-radius: 999px;
+  font-size: 0.74rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  box-shadow: inset 0 -2px 0 rgba(0, 0, 0, 0.15);
+  white-space: nowrap;
+}

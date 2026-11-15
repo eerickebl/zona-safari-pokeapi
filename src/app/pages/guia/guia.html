@@ -1,0 +1,122 @@
+<section class="contenedor pagina">
+  <header class="encabezado">
+    <p class="eyebrow">Pokédex</p>
+    <h1>Guía de campo</h1>
+    <p class="subtitulo">
+      Busca cualquier Pokémon para ver su ficha, en qué hábitat vive y qué tan difícil es atraparlo con cada
+      ball.
+    </p>
+  </header>
+
+  <form class="buscador tarjeta" [formGroup]="formulario" (ngSubmit)="buscar()" role="search" novalidate>
+    <label for="termino">Nombre o número del Pokémon</label>
+    <div class="fila">
+      <input
+        id="termino"
+        class="campo"
+        type="search"
+        formControlName="termino"
+        list="lista-especies"
+        placeholder="Ej.: pikachu, snorlax o 143"
+        autocomplete="off"
+        aria-describedby="ayuda-busqueda"
+        [attr.aria-invalid]="terminoInvalido()"
+      />
+      <button type="submit" class="btn btn-primario" [disabled]="cargando()">🔎 Buscar</button>
+      <button type="button" class="btn btn-secundario" [disabled]="cargando()" (click)="aleatorio()">🎲 Aleatorio</button>
+    </div>
+    <datalist id="lista-especies">
+      @for (especie of especies(); track especie.id) {
+        <option [value]="especie.nombre"></option>
+      }
+    </datalist>
+    <p id="ayuda-busqueda" class="ayuda" [class.invalida]="terminoInvalido()">{{ mensajeValidacion() }}</p>
+    <div class="sugerencias">
+      <span>Prueba con:</span>
+      @for (sugerencia of sugerencias; track sugerencia) {
+        <button type="button" class="chip chip-boton" (click)="irA(sugerencia)">{{ sugerencia }}</button>
+      }
+    </div>
+  </form>
+
+  <div class="resultados" aria-live="polite">
+    @if (cargando()) {
+      <app-cargando [mensaje]="'Buscando «' + terminoActual() + '» en PokéAPI…'" />
+    } @else if (error(); as err) {
+      <app-mensaje-error
+        [icono]="err.noEncontrado ? '🔍' : '⚠️'"
+        [titulo]="err.titulo"
+        [mensaje]="err.mensaje"
+        [conBoton]="!err.noEncontrado"
+        (reintentar)="reintentar()"
+      />
+    } @else if (ficha(); as f) {
+      <div class="tarjeta">
+        <app-ficha-detalle [ficha]="f" />
+      </div>
+
+      <section class="tarjeta captura" aria-labelledby="titulo-captura">
+        <h2 id="titulo-captura">¿Qué tan difícil es atraparlo?</h2>
+
+        @if (f.habitat; as habitat) {
+          <p class="ubicacion">
+            <span>Vive en: <strong>{{ etiquetaHabitat(habitat) }}</strong></span>
+            <a class="btn btn-primario btn-pequeno" routerLink="/explorar" [queryParams]="{ habitat: habitat }">
+              👣 Explorar este hábitat
+            </a>
+          </p>
+        } @else {
+          <p class="ubicacion fuera">
+            🧭 No aparece en la Zona Safari: PokéAPI solo registra hábitats para las especies de Kanto, Johto y
+            Hoenn (#001–#386).
+          </p>
+        }
+
+        <div class="tabla-contenedor">
+          <table>
+            <caption class="sr-only">Probabilidad de captura por lanzamiento según la ball y el ánimo</caption>
+            <thead>
+              <tr>
+                <th scope="col">Ball</th>
+                <th scope="col">Tranquilo</th>
+                <th scope="col">Con roca 🪨</th>
+                <th scope="col">Con cebo 🍓</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (fila of filas(); track fila.ball.id) {
+                <tr [class.mejor]="fila.ball.id === mejorBall()">
+                  <th scope="row">
+                    <span class="ball">
+                      @if (fila.ball.sprite) {
+                        <img [src]="fila.ball.sprite" alt="" width="28" height="28" />
+                      }
+                      {{ fila.ball.nombre }}
+                      <small>×{{ fila.ball.bono }}</small>
+                    </span>
+                  </th>
+                  <td>{{ fila.tranquilo | porcentaje }}</td>
+                  <td>{{ fila.enojado | porcentaje }}</td>
+                  <td>{{ fila.comiendo | porcentaje }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+
+        @if (huida(); as h) {
+          <p class="nota">
+            Probabilidad por lanzamiento con el Pokémon a PS completos (tasa de captura {{ f.tasaCaptura }}/255).
+            Huida por turno: {{ h.tranquilo | porcentaje }} tranquilo, {{ h.enojado | porcentaje }} con roca y
+            {{ h.comiendo | porcentaje }} con cebo.
+          </p>
+        }
+      </section>
+    } @else {
+      <div class="vacio tarjeta">
+        <span class="icono-grande" aria-hidden="true">📖</span>
+        <p>Escribe el nombre o número de un Pokémon, o prueba una de las sugerencias.</p>
+      </div>
+    }
+  </div>
+</section>

@@ -1,0 +1,316 @@
+/* ==========================================================================
+   Zona Safari · estilos globales (variables, tipografía, botones, tarjetas)
+   ========================================================================== */
+
+:root {
+  --verde: #2f7d4a;
+  --verde-medio: #5aa05f;
+  --verde-oscuro: #1d5233;
+  --verde-claro: #e4f2df;
+  --arena: #f6efdf;
+  --arena-2: #ebdfc4;
+  --crema: #fffaf0;
+  --tierra: #7a5230;
+  --amarillo: #f6c431;
+  --rojo: #d6402b;
+  --azul: #2f5fb3;
+  --texto: #1f2a24;
+  --texto-suave: #5a675e;
+  --borde: #e3d6b8;
+  --exito: #2f9e5b;
+  --peligro: #d6402b;
+  --sombra: 0 12px 30px rgba(45, 52, 38, 0.12);
+  --sombra-sm: 0 3px 10px rgba(45, 52, 38, 0.1);
+  --radio: 20px;
+  --radio-sm: 12px;
+  --fuente-titulos: 'Fredoka', 'Segoe UI', system-ui, sans-serif;
+  --fuente-texto: 'Nunito', 'Segoe UI', system-ui, sans-serif;
+  color-scheme: light;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  font-family: var(--fuente-texto);
+  font-size: 1rem;
+  line-height: 1.5;
+  color: var(--texto);
+  background-color: var(--arena);
+  background-image:
+    radial-gradient(circle at 12% 8%, rgba(90, 160, 95, 0.12), transparent 32%),
+    radial-gradient(circle at 88% 0%, rgba(246, 196, 49, 0.14), transparent 28%);
+  background-attachment: fixed;
+}
+
+h1,
+h2,
+h3,
+h4 {
+  font-family: var(--fuente-titulos);
+  font-weight: 600;
+  line-height: 1.15;
+  color: var(--verde-oscuro);
+}
+
+img {
+  max-width: 100%;
+}
+
+a {
+  color: var(--verde);
+}
+
+button,
+input,
+select {
+  font: inherit;
+}
+
+:focus-visible {
+  outline: 3px solid var(--amarillo);
+  outline-offset: 2px;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ---------- Estructura ---------- */
+
+.contenedor {
+  width: min(1200px, 100% - 2rem);
+  margin-inline: auto;
+}
+
+.pagina {
+  padding-block: 2rem 1rem;
+}
+
+.encabezado {
+  margin-bottom: 1.6rem;
+}
+
+.encabezado h1 {
+  margin: 0.2rem 0 0.4rem;
+  font-size: clamp(2rem, 4vw, 2.8rem);
+}
+
+.eyebrow {
+  display: inline-block;
+  margin: 0;
+  padding: 0.2rem 0.7rem;
+  border-radius: 999px;
+  background: var(--verde-claro);
+  color: var(--verde);
+  font-size: 0.8rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.subtitulo {
+  max-width: 60ch;
+  margin: 0;
+  color: var(--texto-suave);
+  font-size: 1.08rem;
+}
+
+.titulo-seccion {
+  margin: 0 0 0.9rem;
+  font-size: 1.2rem;
+}
+
+/* ---------- Tarjetas ---------- */
+
+.tarjeta {
+  padding: 1.3rem;
+  border: 1px solid var(--borde);
+  border-radius: var(--radio);
+  background: var(--crema);
+  box-shadow: var(--sombra-sm);
+}
+
+.vacio {
+  display: grid;
+  justify-items: center;
+  gap: 0.8rem;
+  padding: 2.4rem 1.4rem;
+  text-align: center;
+  color: var(--texto-suave);
+}
+
+.vacio .icono-grande {
+  font-size: 2.6rem;
+  line-height: 1;
+}
+
+.vacio p {
+  margin: 0;
+  max-width: 46ch;
+}
+
+.nota {
+  margin: 0.6rem 0 0;
+  color: var(--texto-suave);
+  font-size: 0.9rem;
+}
+
+/* ---------- Botones ---------- */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  padding: 0.65rem 1.15rem;
+  border: 2px solid transparent;
+  border-radius: 999px;
+  background: var(--arena-2);
+  color: var(--texto);
+  font-weight: 800;
+  line-height: 1.2;
+  text-decoration: none;
+  cursor: pointer;
+  transition: transform 0.15s, background-color 0.2s, box-shadow 0.2s, opacity 0.2s;
+}
+
+.btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: var(--sombra-sm);
+}
+
+.btn:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-primario {
+  background: var(--verde);
+  color: #fff;
+}
+
+.btn-primario:hover:not(:disabled) {
+  background: var(--verde-oscuro);
+}
+
+.btn-secundario {
+  border-color: var(--verde);
+  background: #fff;
+  color: var(--verde-oscuro);
+}
+
+.btn-acento {
+  background: var(--amarillo);
+  color: var(--verde-oscuro);
+}
+
+.btn-peligro {
+  background: var(--peligro);
+  color: #fff;
+}
+
+.btn-fantasma {
+  background: transparent;
+  border-color: var(--borde);
+  color: var(--texto);
+}
+
+.btn-grande {
+  padding: 0.85rem 1.5rem;
+  font-size: 1.05rem;
+}
+
+.btn-pequeno {
+  padding: 0.4rem 0.85rem;
+  font-size: 0.88rem;
+}
+
+/* ---------- Chips ---------- */
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.18rem 0.65rem;
+  border-radius: 999px;
+  background: var(--arena-2);
+  color: var(--texto);
+  font-size: 0.78rem;
+  font-weight: 800;
+}
+
+.chip-dorado {
+  background: linear-gradient(135deg, #ffe17a, #f2b82a);
+  color: #5a3d00;
+}
+
+.chip-morado {
+  background: #e7dcfa;
+  color: #4b2d86;
+}
+
+.chip-verde {
+  background: var(--verde-claro);
+  color: var(--verde-oscuro);
+}
+
+.chip-boton {
+  border: 1px solid var(--borde);
+  cursor: pointer;
+}
+
+.chip-boton:hover {
+  background: var(--verde-claro);
+}
+
+/* ---------- Formularios ---------- */
+
+.campo {
+  width: 100%;
+  padding: 0.7rem 0.9rem;
+  border: 2px solid var(--borde);
+  border-radius: var(--radio-sm);
+  background: #fff;
+  color: var(--texto);
+}
+
+.campo:focus {
+  border-color: var(--verde);
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(47, 125, 74, 0.2);
+}
+
+.campo[aria-invalid='true'] {
+  border-color: var(--peligro);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

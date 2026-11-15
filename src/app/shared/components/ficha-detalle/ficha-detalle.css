@@ -1,0 +1,128 @@
+:host {
+  display: block;
+  container-type: inline-size;
+}
+
+.ficha {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.4rem;
+}
+
+.imagen {
+  position: relative;
+  display: grid;
+  place-items: center;
+  min-height: 15rem;
+  border-radius: var(--radio);
+  background:
+    radial-gradient(circle at 50% 60%, rgba(255, 255, 255, 0.9) 0 38%, transparent 39%),
+    linear-gradient(160deg, var(--verde-claro), #d2e8c8);
+}
+
+.imagen.shiny {
+  background:
+    radial-gradient(circle at 50% 60%, rgba(255, 255, 255, 0.9) 0 38%, transparent 39%),
+    linear-gradient(160deg, #fff4c2, #f6d97a);
+}
+
+.imagen img {
+  width: min(15rem, 80%);
+  height: auto;
+  filter: drop-shadow(0 10px 12px rgba(0, 0, 0, 0.18));
+}
+
+.etiqueta-shiny {
+  position: absolute;
+  top: 0.8rem;
+  left: 0.8rem;
+}
+
+.numero {
+  margin: 0;
+  color: var(--texto-suave);
+  font-weight: 800;
+}
+
+h2 {
+  margin: 0.1rem 0 0.6rem;
+  font-size: clamp(1.7rem, 3vw, 2.2rem);
+}
+
+.etiquetas {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.descripcion {
+  margin: 1rem 0;
+  line-height: 1.6;
+}
+
+.datos {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(8rem, 1fr));
+  gap: 0.6rem;
+  margin: 0 0 1rem;
+}
+
+.datos div {
+  padding: 0.55rem 0.75rem;
+  border-radius: var(--radio-sm);
+  background: var(--arena);
+}
+
+.datos dt {
+  font-size: 0.75rem;
+  font-weight: 800;
+  color: var(--texto-suave);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.datos dd {
+  margin: 0.15rem 0 0;
+  font-weight: 800;
+}
+
+.stats {
+  display: grid;
+  gap: 0.55rem;
+  align-content: start;
+}
+
+.stats h3 {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin: 0 0 0.3rem;
+  font-size: 1.1rem;
+}
+
+.stats h3 span {
+  font-family: var(--fuente-texto);
+  font-size: 0.85rem;
+  color: var(--texto-suave);
+}
+
+/* Se adapta al ancho de su contenedor (página o ventana modal). */
+@container (min-width: 620px) {
+  .ficha {
+    grid-template-columns: 14rem 1fr;
+  }
+
+  .stats {
+    grid-column: 1 / -1;
+  }
+}
+
+@container (min-width: 980px) {
+  .ficha {
+    grid-template-columns: 15rem 1.2fr 1fr;
+  }
+
+  .stats {
+    grid-column: auto;
+  }
+}

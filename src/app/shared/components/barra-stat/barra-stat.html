@@ -1,0 +1,12 @@
+<span class="nombre">{{ nombre() }}</span>
+<span class="valor">{{ valor() }}</span>
+<span
+  class="barra"
+  role="meter"
+  aria-valuemin="0"
+  [attr.aria-valuemax]="maximo()"
+  [attr.aria-valuenow]="valor()"
+  [attr.aria-label]="nombre()"
+>
+  <span class="relleno" [style.width.%]="porcentaje()" [style.background-color]="color()"></span>
+</span>
